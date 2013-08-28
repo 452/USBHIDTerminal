@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2011 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <!-- vendor and product ID for Dream Cheeky USB Missle Launcher -->
+    <usb-device vendor-id="2689" product-id="1793" />
+    <!-- vendor and product ID for Dream Cheeky Wireless USB Missle Launcher -->
+    <usb-device vendor-id="2689" product-id="65281" />
+    
+    <usb-device vendor-id="1234" product-id="0001" />
+    <usb-device vendor-id="1234" product-id="1" />
+    <usb-device vendor-id="1234" product-id="03f4" />
+    
+    <usb-device vendor-id="046d" product-id="c019" />
+    
+    <usb-device vendor-id="9865" product-id="6035" />
+    
+    <usb-device vendor-id="04D8" product-id="0033" />
+    <usb-device vendor-id="04D8" product-id="003F" />
+</resources>

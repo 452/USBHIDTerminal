@@ -1,0 +1,49 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- <item -->
+    <!-- android:id="@+id/menu_settings" -->
+    <!-- android:orderInCategory="100" -->
+    <!-- android:showAsAction="never" -->
+    <!-- android:title="@string/menu_settings"/> -->
+    <item
+        android:id="@+id/menuSettingsReceiveDataFormat"
+        android:title="@string/receiveDataFormat">
+        <menu>
+            <group
+                android:id="@+id/menuSettingsReceive"
+                android:checkableBehavior="single" >
+                <item
+                    android:id="@+id/menuSettingsReceiveBinary"
+                    android:title="@string/binary"/>
+                <item
+                    android:id="@+id/menuSettingsReceiveInteger"
+                    android:title="@string/integer"/>
+                <item
+                    android:id="@+id/menuSettingsReceiveHexadecimal"
+                    android:title="@string/hexadecimal"/>
+                <item
+                    android:id="@+id/menuSettingsReceiveText"
+                    android:title="@string/text"/>
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menuSettingsDelimiter"
+        android:title="@string/delimiter">
+        <menu>
+            <group
+                android:checkableBehavior="single" >
+                <item
+                    android:id="@+id/menuSettingsDelimiterNone"
+                    android:title="@string/delimiterNone"/>
+                <item
+                    android:id="@+id/menuSettingsDelimiterSpace"
+                    android:title="@string/delimiterSpace"/>
+                <item
+                    android:id="@+id/menuSettingsDelimiterNewLine"
+                    android:title="@string/delimiterNewLine"/>
+            </group>
+        </menu>
+    </item>
+
+</menu>

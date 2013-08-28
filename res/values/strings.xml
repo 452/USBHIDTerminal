@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">USB HID Terminal version</string>
+    <string name="receiveDataFormat">Receive data format</string>
+    <string name="integer">Integer</string>
+    <string name="hexadecimal">Hexadecimal</string>
+    <string name="binary">Binary</string>
+    <string name="text">Char</string>
+    <string name="delimiter">Delimiter</string>
+    <string name="delimiterNone">Delimiter - None</string>
+    <string name="delimiterNewLine">Delimiter - New Line</string>
+    <string name="delimiterSpace">Delimiter - Space</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+	<string name="selectHIDDevice">Select HID device</string>
+	<string name="send">Send</string>
+	<string name="clear">Clear</string>
+	<string name="sendText">Send Text</string>
+	<string name="sendData">Bytes/0xAB/#AB</string>
+</resources>
