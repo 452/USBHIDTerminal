@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import java.io.UnsupportedEncodingException;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -143,13 +145,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
 												}
 											}
 										} else if (receiveDataFormat.equals(TEXT)) {
+											byte[] buf = new byte[buffer.length];
 											for (int i = 0; i < packetSize; i++) {
-												if (buffer[i] != 0) {
-													stringBuilder.append(String.valueOf((char) buffer[i]));
-												} else {
-													break;
-												}
+												//if (buffer[i] != 0) {
+												buf[i] = buffer[i]; //I wanted to see the 0's too
+												//stringBuilder.append(String.valueOf((char) buffer[i]));
+												//} else {
+													//break;
+												//}
 											}
+											try{
+												String bufStr = new String(buf,"US-ASCII");
+												for(int i=0; i < bufStr.length(); i++) {
+													stringBuilder.append(delimiter).append(bufStr.substring(i,i+1));
+												}
+											}catch(UnsupportedEncodingException e) {
+												e.printStackTrace();
+											}
+											
 										} else if (receiveDataFormat.equals(BINARY)) {
 											for (int i = 0; i < packetSize; i++) {
 												if (buffer[i] != 0) {
@@ -179,7 +192,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			if (device != null && endPointWrite != null && mUsbManager.hasPermission(device) && !edtxtHidInput.getText().toString().isEmpty()) {
 				// mLog(connection +"\n"+ device +"\n"+ request +"\n"+
 				// packetSize);
-				byte[] out = edtxtHidInput.getText().toString().getBytes();// UTF-16LE
+				byte[] out = edtxtHidInput.getText().toString().getBytes("US-ASCII");// UTF-16LE
 																			// Charset.forName("UTF-16")
 				mLog("Sending: " + edtxtHidInput.getText().toString());
 				if (radioButton.isChecked()) {
@@ -193,7 +206,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 						mLog("Please check your bytes, sent as text");
 					}
 				}
-				int status = connection.bulkTransfer(endPointWrite, out, out.length, 250);
+				int status = connection.controlTransfer(0x21,0x9,0x200,0,out,out.length,300);//bulkTransfer(endPointWrite, out, out.length, 250);
 				mLog("sended " + status + " bytes");
 				for (int i = 0; i < out.length; i++) {
 					if (out[i] != 0) {
