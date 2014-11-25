@@ -2,8 +2,6 @@ package com.appspot.usbhidterminal;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -54,6 +52,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	private SharedPreferences sharedPreferences;
 
+	private Intent service;
+	private IntentFilter filter;
+	private USBThreadDataReceiver usbThreadDataReceiver;
+
 	private UsbDevice device;
 	private UsbManager mUsbManager;
 
@@ -69,109 +71,116 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private Button btnSelectHIDDevice;
 	private Button btnClear;
 	private RadioButton radioButton;
-	private Timer myTimer = new Timer();
 	private final Handler uiHandler = new Handler();
 	private String settingsDelimiter;
 	private String delimiter;
-
 	private String receiveDataFormat;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		try {
-			super.onCreate(savedInstanceState);
-			setContentView(R.layout.activity_main);
-			setVersionToTitle();
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		setVersionToTitle();
+		btnSend = (Button) findViewById(R.id.btnSend);
+		btnSend.setOnClickListener(this);
 
-			btnSend = (Button) findViewById(R.id.btnSend);
-			btnSend.setOnClickListener(this);
+		btnSelectHIDDevice = (Button) findViewById(R.id.btnSelectHIDDevice);
+		btnSelectHIDDevice.setOnClickListener(this);
 
-			btnSelectHIDDevice = (Button) findViewById(R.id.btnSelectHIDDevice);
-			btnSelectHIDDevice.setOnClickListener(this);
+		btnClear = (Button) findViewById(R.id.btnClear);
+		btnClear.setOnClickListener(this);
 
-			btnClear = (Button) findViewById(R.id.btnClear);
-			btnClear.setOnClickListener(this);
+		edtxtHidInput = (EditText) findViewById(R.id.edtxtHidInput);
+		log_txt = (EditText) findViewById(R.id.log_txt);
 
-			edtxtHidInput = (EditText) findViewById(R.id.edtxtHidInput);
-			log_txt = (EditText) findViewById(R.id.log_txt);
+		radioButton = (RadioButton) findViewById(R.id.rbSendData);
 
-			radioButton = (RadioButton) findViewById(R.id.rbSendData);
+		mLog("Initialized\nPlease select your USB HID device");
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+		filter = new IntentFilter(ACTION_USB_PERMISSION);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+		edtxtHidInput.setText("129");
+		// btnSend.setEnabled(true);
+		setupReceiver();
+	}
 
-			mLog("Initialized\nPlease select your USB HID device");
-			getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-			mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-			IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-			filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-			filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-			registerReceiver(mUsbReceiver, filter);
-			edtxtHidInput.setText("129");
-			// btnSend.setEnabled(true);
-			setupReceiver();
-		} catch (Exception e) {
-			Log.e("Init", "Initialization error", e);
+	private class USBThreadDataReceiver extends Thread {
+
+		private volatile boolean isStopped;
+
+		@Override
+		public void run() {
+			try {
+				if (connection != null && endPointRead != null) {
+					final byte[] buffer = new byte[packetSize];
+
+					while (!isStopped) {
+						final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
+						uiHandler.post(new Runnable() {
+							@Override
+							public void run() {
+								if (status >= 0) {
+									StringBuilder stringBuilder = new StringBuilder();
+									if (receiveDataFormat.equals(INTEGER)) {
+										for (int i = 0; i < packetSize; i++) {
+											if (buffer[i] != 0) {
+												stringBuilder.append(delimiter).append(String.valueOf(toInt(buffer[i])));
+											} else {
+												break;
+											}
+										}
+									} else if (receiveDataFormat.equals(HEXADECIMAL)) {
+										for (int i = 0; i < packetSize; i++) {
+											if (buffer[i] != 0) {
+												stringBuilder.append(delimiter).append(Integer.toHexString(buffer[i]));
+											} else {
+												break;
+											}
+										}
+									} else if (receiveDataFormat.equals(TEXT)) {
+										for (int i = 0; i < packetSize; i++) {
+											if (buffer[i] != 0) {
+												stringBuilder.append(String.valueOf((char) buffer[i]));
+											} else {
+												break;
+											}
+										}
+									} else if (receiveDataFormat.equals(BINARY)) {
+										for (int i = 0; i < packetSize; i++) {
+											if (buffer[i] != 0) {
+												stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
+											} else {
+												break;
+											}
+										}
+									}
+									stringBuilder.append("\nreceived ").append(status).append(" bytes");
+									mLog(stringBuilder.toString());
+								}
+							}
+						});
+					}
+				}
+			} catch (Exception e) {
+				mLog("Exception: " + e.getLocalizedMessage());
+				Log.w("setupReceiver", e);
+			}
+			if (isInterrupted()) {
+				return;
+			}
+
+		}
+
+		public void stopThis() {
+			isStopped = true;
+			this.interrupt();
 		}
 	}
 
 	private void setupReceiver() {
-		myTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				{
-					try {
-						if (connection != null && endPointRead != null) {
-							final byte[] buffer = new byte[packetSize];
-							final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
-							uiHandler.post(new Runnable() {
-								@Override
-								public void run() {
-									if (status >= 0) {
-										StringBuilder stringBuilder = new StringBuilder();
-										if (receiveDataFormat.equals(INTEGER)) {
-											for (int i = 0; i < packetSize; i++) {
-												if (buffer[i] != 0) {
-													stringBuilder.append(delimiter).append(String.valueOf(toInt(buffer[i])));
-												} else {
-													break;
-												}
-											}
-										} else if (receiveDataFormat.equals(HEXADECIMAL)) {
-											for (int i = 0; i < packetSize; i++) {
-												if (buffer[i] != 0) {
-													stringBuilder.append(delimiter).append(Integer.toHexString(buffer[i]));
-												} else {
-													break;
-												}
-											}
-										} else if (receiveDataFormat.equals(TEXT)) {
-											for (int i = 0; i < packetSize; i++) {
-												if (buffer[i] != 0) {
-													stringBuilder.append(String.valueOf((char) buffer[i]));
-												} else {
-													break;
-												}
-											}
-										} else if (receiveDataFormat.equals(BINARY)) {
-											for (int i = 0; i < packetSize; i++) {
-												if (buffer[i] != 0) {
-													stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
-												} else {
-													break;
-												}
-											}
-										}
-										stringBuilder.append("\nreceived ").append(status).append(" bytes");
-										mLog(stringBuilder.toString());
-									}
-								}
-							});
-						}
-					} catch (Exception e) {
-						mLog("Exception: " + e.getLocalizedMessage());
-						Log.w("setupReceiver", e);
-					}
-				}
-			};
-		}, 0L, 1);
+		usbThreadDataReceiver = new USBThreadDataReceiver();
 	}
 
 	public void onClick(View v) {
@@ -262,6 +271,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				if (device != null) {
 					device = null;
 					btnSend.setEnabled(false);
+					getApplicationContext().stopService(service);
+					usbThreadDataReceiver.stopThis();
 				}
 				mLog("device disconnected");
 			}
@@ -293,6 +304,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				} catch (Exception e) {
 					Log.e("endPointWrite", "Device have no endPointRead", e);
 				}
+				service = new Intent(getApplicationContext(), USBService.class);
+				getApplicationContext().startService(service);
+				usbThreadDataReceiver.start();
 				btnSend.setEnabled(true);
 			}
 		}
@@ -304,6 +318,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		receiveDataFormat = sharedPreferences.getString(RECEIVE_DATA_FORMAT, TEXT);
 		setDelimiter();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		registerReceiver(mUsbReceiver, filter);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(mUsbReceiver);
 	}
 
 	@Override
