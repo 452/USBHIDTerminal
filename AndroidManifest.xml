@@ -26,6 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name="com.appspot.usbhidterminal.USBService" android:icon="@drawable/ic_launcher" android:process=":my_process" android:label="@string/service_name" />
     </application>
-
 </manifest>

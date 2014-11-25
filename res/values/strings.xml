@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">USB HID Terminal version</string>
+    <string name="service_name">USB HID Terminal</string>
     <string name="receiveDataFormat">Receive data format</string>
     <string name="integer">Integer</string>
     <string name="hexadecimal">Hexadecimal</string>
