@@ -255,14 +255,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			if (ACTION_USB_PERMISSION.equals(action)) {
-				synchronized (this) {
-					setDevice(intent);
-				}
+				setDevice(intent);
 			}
 			if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-				synchronized (this) {
-					setDevice(intent);
-				}
+				setDevice(intent);
 				if (device == null) {
 					mLog("device connected");
 				}
