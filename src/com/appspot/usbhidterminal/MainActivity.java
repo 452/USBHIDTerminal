@@ -1,15 +1,13 @@
 package com.appspot.usbhidterminal;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -19,16 +17,12 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.Toast;
-
-import com.appspot.usbhidterminal.USBHIDService.LocalBinder;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
-	private Activity activity;
 	private SharedPreferences sharedPreferences;
 
-	private USBHIDService usbService;
+	private Intent usbService;
 	private USBServiceResultReceiver usbServiceResultReceiver;
 
 	private EditText log_txt;
@@ -41,28 +35,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	private String receiveDataFormat;
 	private String delimiter;
-	boolean mBound;
-
-	/** Defines callbacks for service binding, passed to bindService() */
-	private ServiceConnection mConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			LocalBinder binder = (LocalBinder) service;
-			usbService = binder.getService();
-			mBound = true;
-			Toast.makeText(getApplicationContext(), "onServiceConnected ...", Toast.LENGTH_SHORT).show();
-			usbService.setActivity(activity);
-			setDelimiter();
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			Toast.makeText(getApplicationContext(), "onServiceDisconnected ...", Toast.LENGTH_SHORT).show();
-			mBound = false;
-		}
-
-	};
 
 	class USBServiceResultReceiver extends ResultReceiver {
 
@@ -84,15 +56,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			if (resultCode == Consts.ACTION_USB_DEVICE_DETACHED) {
 				btnSend.setEnabled(false);
 			}
+			if (resultCode == Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT) {
+				showListOfDevices(resultData.getCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST));
+			}
 		}
 
 	}
 
 	private void prepareUSBHIDService() {
-		Intent intent = new Intent(activity, USBHIDService.class);
+		usbService = new Intent(this, USBHIDService.class);
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
-		intent.putExtra("receiver", usbServiceResultReceiver);
-		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+		usbService.putExtra("receiver", usbServiceResultReceiver);
+		usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
+		usbService.putExtra(Consts.DELIMITER, delimiter);
+		startService(usbService);
 	}
 
 	@Override
@@ -100,7 +77,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		setVersionToTitle();
-		activity = this;
 		btnSend = (Button) findViewById(R.id.btnSend);
 		btnSend.setOnClickListener(this);
 
@@ -114,6 +90,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		log_txt = (EditText) findViewById(R.id.log_txt);
 
 		radioButton = (RadioButton) findViewById(R.id.rbSendData);
+		radioButton.setOnClickListener(this);
 
 		mLog("Initialized\nPlease select your USB HID device");
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -123,14 +100,43 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	public void onClick(View v) {
 		if (v == btnSend) {
-			usbService.sendData(edtxtHidInput.getText().toString(), radioButton.isChecked());
+			Intent usbService = new Intent(Consts.ACTION_USB_SEND_DATA);
+			usbService.putExtra(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
+			sendBroadcast(usbService);
+		}
+		if (v == radioButton) {
+			Intent usbService = new Intent(Consts.ACTION_USB_DATA_TYPE);
+			usbService.putExtra(Consts.ACTION_USB_DATA_TYPE, radioButton.isChecked());
+			sendBroadcast(usbService);
 		}
 		if (v == btnClear) {
 			log_txt.setText("");
 		}
 		if (v == btnSelectHIDDevice) {
-			usbService.showListOfDevices();
+			Intent usbService = new Intent(Consts.ACTION_USB_SHOW_DEVICES_LIST);
+			sendBroadcast(usbService);
 		}
+	}
+
+	void showListOfDevices(CharSequence devicesName[]) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+		if (devicesName.length == 0) {
+			builder.setTitle(Consts.MESSAGE_CONNECT_YOUR_USB_HID_DEVICE);
+		} else {
+			builder.setTitle(Consts.MESSAGE_SELECT_YOUR_USB_HID_DEVICE);
+		}
+
+		builder.setItems(devicesName, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent usbService = new Intent(Consts.ACTION_USB_SELECT_DEVICE);
+				usbService.putExtra(Consts.ACTION_USB_SELECT_DEVICE, which);
+				sendBroadcast(usbService);
+			}
+		});
+		builder.setCancelable(true);
+		builder.show();
 	}
 
 	@Override
@@ -139,26 +145,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
 		setDelimiter();
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		if (mBound) {
-			unbindService(mConnection);
-			mBound = false;
-		}
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
 		prepareUSBHIDService();
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
 	}
 
 	@Override
@@ -240,8 +227,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			delimiter = Consts.SPACE;
 		}
 		if (usbService != null) {
-			usbService.setReceiveDataFormat(receiveDataFormat);
-			usbService.setDelimiter(delimiter);
+			Intent usbService = new Intent(Consts.RECEIVE_DATA_FORMAT);
+			usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
+			usbService.putExtra(Consts.DELIMITER, delimiter);
+			sendBroadcast(usbService);
 		}
 	}
 

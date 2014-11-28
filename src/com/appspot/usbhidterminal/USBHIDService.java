@@ -3,13 +3,10 @@ package com.appspot.usbhidterminal;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbConstants;
@@ -18,7 +15,6 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -26,8 +22,6 @@ import android.os.ResultReceiver;
 import android.util.Log;
 
 public class USBHIDService extends Service {
-
-	private final IBinder mBinder = new LocalBinder();
 
 	private USBThreadDataReceiver usbThreadDataReceiver;
 	private ResultReceiver resultReceiver;
@@ -41,30 +35,41 @@ public class USBHIDService extends Service {
 	private UsbDeviceConnection connection;
 	private UsbDevice device;
 
-	private Activity activity;
 	private IntentFilter filter;
 	private PendingIntent mPermissionIntent;
 
 	private String delimiter;
 	private String receiveDataFormat;
 	private int packetSize;
+	private boolean sendedDataType;
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		//Toast.makeText(this, "onBind ...", Toast.LENGTH_SHORT).show();
+		return null;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
 		resultReceiver = intent.getParcelableExtra("receiver");
+		receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
+		delimiter = intent.getStringExtra(Consts.DELIMITER);
 		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(Consts.ACTION_USB_PERMISSION), 0);
 		filter = new IntentFilter(Consts.ACTION_USB_PERMISSION);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+		filter.addAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
+		filter.addAction(Consts.ACTION_USB_SELECT_DEVICE);
+		filter.addAction(Consts.ACTION_USB_SEND_DATA);
+		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
-		return mBinder;
+		return START_STICKY;
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		//Toast.makeText(this, "Service destroyed ...", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "Service destroyed ...",
+		// Toast.LENGTH_SHORT).show();
 		if (usbThreadDataReceiver != null) {
 			usbThreadDataReceiver.stopThis();
 		}
@@ -147,7 +152,7 @@ public class USBHIDService extends Service {
 		}
 	}
 
-	public void sendData(String data, boolean sendAsString) {
+	private void sendData(String data, boolean sendAsString) {
 		if (device != null && endPointWrite != null && mUsbManager.hasPermission(device) && !data.isEmpty()) {
 			// mLog(connection +"\n"+ device +"\n"+ request +"\n"+
 			// packetSize);
@@ -183,6 +188,32 @@ public class USBHIDService extends Service {
 	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
+			if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
+				sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
+			}
+			if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
+				sendData(intent.getStringExtra(Consts.ACTION_USB_SEND_DATA), sendedDataType);
+			}
+			if (Consts.RECEIVE_DATA_FORMAT.equals(action)) {
+				receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
+				delimiter = intent.getStringExtra(Consts.DELIMITER);
+			}
+			if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
+				mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+				List<CharSequence> list = new LinkedList<CharSequence>();
+				for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+					list.add("devID:" + usbDevice.getDeviceId() + " VID:" + Integer.toHexString(usbDevice.getVendorId()) + " PID:" + Integer.toHexString(usbDevice.getProductId()) + " " + usbDevice.getDeviceName());
+				}
+				final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
+				list.toArray(devicesName);
+				Bundle bundle = new Bundle();
+				bundle.putCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST, devicesName);
+				resultReceiver.send(Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT, bundle);
+			}
+			if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
+				device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
+				mUsbManager.requestPermission(device, mPermissionIntent);
+			}
 			if (Consts.ACTION_USB_PERMISSION.equals(action)) {
 				setDevice(intent);
 			}
@@ -235,33 +266,6 @@ public class USBHIDService extends Service {
 		}
 	};
 
-	void showListOfDevices() {
-		if (activity != null) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-			mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-			if (mUsbManager.getDeviceList().size() == 0) {
-				builder.setTitle(Consts.MESSAGE_CONNECT_YOUR_USB_HID_DEVICE);
-			} else {
-				builder.setTitle(Consts.MESSAGE_SELECT_YOUR_USB_HID_DEVICE);
-			}
-			List<CharSequence> list = new LinkedList<CharSequence>();
-			for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
-				list.add("devID:" + usbDevice.getDeviceId() + " VID:" + Integer.toHexString(usbDevice.getVendorId()) + " PID:" + Integer.toHexString(usbDevice.getProductId()) + " " + usbDevice.getDeviceName());
-			}
-			final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
-			list.toArray(devicesName);
-			builder.setItems(devicesName, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[which];
-					mUsbManager.requestPermission(device, mPermissionIntent);
-				}
-			});
-			builder.setCancelable(true);
-			builder.show();
-		}
-	}
-
 	private void mLog(String value) {
 		Bundle bundle = new Bundle();
 		bundle.putString("log", value);
@@ -280,30 +284,6 @@ public class USBHIDService extends Service {
 
 	private static byte toByte(int c) {
 		return (byte) (c <= 0x7f ? c : ((c % 0x80) - 0x80));
-	}
-
-	/**
-	 * Class used for the client Binder. Because we know this service always
-	 * runs in the same process as its clients, we don't need to deal with IPC.
-	 */
-	public class LocalBinder extends Binder {
-		USBHIDService getService() {
-			// Return this instance of LocalService so clients can call public
-			// methods
-			return USBHIDService.this;
-		}
-	}
-
-	public void setDelimiter(String delimiter) {
-		this.delimiter = delimiter;
-	}
-
-	public void setReceiveDataFormat(String receiveDataFormat) {
-		this.receiveDataFormat = receiveDataFormat;
-	}
-
-	public void setActivity(Activity activity) {
-		this.activity = activity;
 	}
 
 }
