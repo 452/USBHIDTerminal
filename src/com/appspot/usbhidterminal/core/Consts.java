@@ -1,4 +1,4 @@
-package com.appspot.usbhidterminal;
+package com.appspot.usbhidterminal.core;
 
 public final class Consts {
 	public static final String CONNECTION = "CONNECTION";

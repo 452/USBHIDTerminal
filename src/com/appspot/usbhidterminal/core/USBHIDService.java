@@ -1,4 +1,4 @@
-package com.appspot.usbhidterminal;
+package com.appspot.usbhidterminal.core;
 
 import java.util.LinkedList;
 import java.util.List;

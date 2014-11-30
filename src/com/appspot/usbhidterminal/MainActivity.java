@@ -1,5 +1,8 @@
 package com.appspot.usbhidterminal;
 
+import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBHIDService;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
