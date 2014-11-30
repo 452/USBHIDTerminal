@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
+import android.widget.Toast;
 
 public class USBHIDService extends Service {
 
@@ -49,10 +50,9 @@ public class USBHIDService extends Service {
 	}
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		resultReceiver = intent.getParcelableExtra("receiver");
-		receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
-		delimiter = intent.getStringExtra(Consts.DELIMITER);
+	public void onCreate() {
+		super.onCreate();
+		Toast.makeText(this, "Service onCreate ...", Toast.LENGTH_SHORT).show();
 		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(Consts.ACTION_USB_PERMISSION), 0);
 		filter = new IntentFilter(Consts.ACTION_USB_PERMISSION);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
@@ -62,14 +62,48 @@ public class USBHIDService extends Service {
 		filter.addAction(Consts.ACTION_USB_SEND_DATA);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
-		return START_STICKY;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		String action = intent.getAction();
+		Toast.makeText(this, "Service onStartCommand ...", Toast.LENGTH_SHORT).show();
+		if (resultReceiver == null) {
+			resultReceiver = intent.getParcelableExtra("receiver");
+		}
+		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
+			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
+		}
+		if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
+			sendData(intent.getStringExtra(Consts.ACTION_USB_SEND_DATA), sendedDataType);
+		}
+		if (Consts.RECEIVE_DATA_FORMAT.equals(action)) {
+			receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
+			delimiter = intent.getStringExtra(Consts.DELIMITER);
+		}
+		if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
+			mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+			List<CharSequence> list = new LinkedList<CharSequence>();
+			for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+				list.add("devID:" + usbDevice.getDeviceId() + " VID:" + Integer.toHexString(usbDevice.getVendorId()) + " PID:" + Integer.toHexString(usbDevice.getProductId()) + " " + usbDevice.getDeviceName());
+			}
+			final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
+			list.toArray(devicesName);
+			Bundle bundle = new Bundle();
+			bundle.putCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST, devicesName);
+			resultReceiver.send(Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT, bundle);
+		}
+		if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
+			device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
+			mUsbManager.requestPermission(device, mPermissionIntent);
+		}
+		return START_REDELIVER_INTENT;
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		// Toast.makeText(this, "Service destroyed ...",
-		// Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "Service destroyed ...", Toast.LENGTH_SHORT).show();
 		if (usbThreadDataReceiver != null) {
 			usbThreadDataReceiver.stopThis();
 		}
@@ -188,32 +222,6 @@ public class USBHIDService extends Service {
 	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
-				sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
-			}
-			if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
-				sendData(intent.getStringExtra(Consts.ACTION_USB_SEND_DATA), sendedDataType);
-			}
-			if (Consts.RECEIVE_DATA_FORMAT.equals(action)) {
-				receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
-				delimiter = intent.getStringExtra(Consts.DELIMITER);
-			}
-			if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
-				mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-				List<CharSequence> list = new LinkedList<CharSequence>();
-				for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
-					list.add("devID:" + usbDevice.getDeviceId() + " VID:" + Integer.toHexString(usbDevice.getVendorId()) + " PID:" + Integer.toHexString(usbDevice.getProductId()) + " " + usbDevice.getDeviceName());
-				}
-				final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
-				list.toArray(devicesName);
-				Bundle bundle = new Bundle();
-				bundle.putCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST, devicesName);
-				resultReceiver.send(Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT, bundle);
-			}
-			if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
-				device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
-				mUsbManager.requestPermission(device, mPermissionIntent);
-			}
 			if (Consts.ACTION_USB_PERMISSION.equals(action)) {
 				setDevice(intent);
 			}

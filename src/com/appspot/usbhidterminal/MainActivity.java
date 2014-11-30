@@ -67,8 +67,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		usbService = new Intent(this, USBHIDService.class);
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
-		usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
-		usbService.putExtra(Consts.DELIMITER, delimiter);
 		startService(usbService);
 	}
 
@@ -100,21 +98,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	public void onClick(View v) {
 		if (v == btnSend) {
-			Intent usbService = new Intent(Consts.ACTION_USB_SEND_DATA);
+			usbService.setAction(Consts.ACTION_USB_SEND_DATA);
 			usbService.putExtra(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
-			sendBroadcast(usbService);
+			startService(usbService);
 		}
 		if (v == radioButton) {
-			Intent usbService = new Intent(Consts.ACTION_USB_DATA_TYPE);
+			usbService.setAction(Consts.ACTION_USB_DATA_TYPE);
 			usbService.putExtra(Consts.ACTION_USB_DATA_TYPE, radioButton.isChecked());
-			sendBroadcast(usbService);
+			startService(usbService);
 		}
 		if (v == btnClear) {
 			log_txt.setText("");
 		}
 		if (v == btnSelectHIDDevice) {
-			Intent usbService = new Intent(Consts.ACTION_USB_SHOW_DEVICES_LIST);
-			sendBroadcast(usbService);
+			usbService.setAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
+			startService(usbService);
 		}
 	}
 
@@ -130,9 +128,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		builder.setItems(devicesName, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				Intent usbService = new Intent(Consts.ACTION_USB_SELECT_DEVICE);
+				usbService.setAction(Consts.ACTION_USB_SELECT_DEVICE);
 				usbService.putExtra(Consts.ACTION_USB_SELECT_DEVICE, which);
-				sendBroadcast(usbService);
+				startService(usbService);
 			}
 		});
 		builder.setCancelable(true);
@@ -144,8 +142,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		super.onStart();
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
-		setDelimiter();
 		prepareUSBHIDService();
+		setDelimiter();
 	}
 
 	@Override
@@ -226,12 +224,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		} else if (settingsDelimiter.equals(Consts.DELIMITER_SPACE)) {
 			delimiter = Consts.SPACE;
 		}
-		if (usbService != null) {
-			Intent usbService = new Intent(Consts.RECEIVE_DATA_FORMAT);
-			usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
-			usbService.putExtra(Consts.DELIMITER, delimiter);
-			sendBroadcast(usbService);
-		}
+		usbService.setAction(Consts.RECEIVE_DATA_FORMAT);
+		usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
+		usbService.putExtra(Consts.DELIMITER, delimiter);
+		startService(usbService);
 	}
 
 	private void mLog(String log) {
