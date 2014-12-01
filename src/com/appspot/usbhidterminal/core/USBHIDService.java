@@ -3,33 +3,33 @@ package com.appspot.usbhidterminal.core;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
-import android.widget.Toast;
 
-public class USBHIDService extends AstractUSBHIDService {
+public class USBHIDService extends AbstractUSBHIDService {
 
 	private String delimiter;
 	private String receiveDataFormat;
 
 	@Override
 	public void onCreate() {
-		Toast.makeText(this, "Service onCreate ...", Toast.LENGTH_SHORT).show();
 		super.onCreate();
 	}
 
 	@Override
 	public void onCommand(Intent intent, String action, int flags, int startId) {
-		super.onCommand(intent, action, flags, startId);
-		Toast.makeText(this, "Service onCommand ...", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "Service onCommand ...",
+		// Toast.LENGTH_SHORT).show();
 		if (Consts.RECEIVE_DATA_FORMAT.equals(action)) {
 			receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
 			delimiter = intent.getStringExtra(Consts.DELIMITER);
 		}
+		super.onCommand(intent, action, flags, startId);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Toast.makeText(this, "Service destroyed ...", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "Service destroyed ...",
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override

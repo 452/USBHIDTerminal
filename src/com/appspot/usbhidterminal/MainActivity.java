@@ -1,8 +1,5 @@
 package com.appspot.usbhidterminal;
 
-import com.appspot.usbhidterminal.core.Consts;
-import com.appspot.usbhidterminal.core.USBHIDService;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -20,6 +17,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+
+import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBHIDService;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 

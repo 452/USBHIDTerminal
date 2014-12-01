@@ -21,7 +21,7 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-public abstract class AstractUSBHIDService extends Service {
+public abstract class AbstractUSBHIDService extends Service {
 
 	private USBThreadDataReceiver usbThreadDataReceiver;
 	private ResultReceiver resultReceiver;
