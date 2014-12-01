@@ -101,7 +101,7 @@ public abstract class AbstractUSBHIDService extends Service {
 		unregisterReceiver(mUsbReceiver);
 	}
 
-	class USBThreadDataReceiver extends Thread {
+	private class USBThreadDataReceiver extends Thread {
 
 		private volatile boolean isStopped;
 
