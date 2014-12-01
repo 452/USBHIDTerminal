@@ -48,10 +48,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		@Override
 		protected void onReceiveResult(int resultCode, Bundle resultData) {
 			if (resultCode == Consts.ACTION_USB_LOG) {
-				mLog(resultData.getString("log"));
+				mLog(resultData.getString("log"), false);
 			}
 			if (resultCode == Consts.ACTION_USB_LOG_C) {
-				mLogC(resultData.getString("log"));
+				mLog(resultData.getString("log"), true);
 			}
 			if (resultCode == Consts.ACTION_USB_DEVICE_ATTACHED) {
 				btnSend.setEnabled(true);
@@ -93,7 +93,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		radioButton = (RadioButton) findViewById(R.id.rbSendData);
 		radioButton.setOnClickListener(this);
 
-		mLog("Initialized\nPlease select your USB HID device");
+		mLog("Initialized\nPlease select your USB HID device", false);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		edtxtHidInput.setText("129");
 		// btnSend.setEnabled(true);
@@ -233,13 +233,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		startService(usbService);
 	}
 
-	private void mLog(String log) {
-		log_txt.append(Consts.NEW_LINE);
-		log_txt.append(log);
-		log_txt.setSelection(log_txt.getText().length());
-	}
-
-	private void mLogC(String log) {
+	private void mLog(String log, boolean newLine) {
+		if (newLine) {
+			log_txt.append(Consts.NEW_LINE);
+		}
 		log_txt.append(log);
 		log_txt.setSelection(log_txt.getText().length());
 	}
