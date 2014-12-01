@@ -79,7 +79,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 		StringBuilder stringBuilder = new StringBuilder();
 		if (receiveDataFormat.equals(Consts.INTEGER)) {
-			for (int i = 0; i < getPacketSize(); i++) {
+			for (int i = 0; i < buffer.length; i++) {
 				if (buffer[i] != 0) {
 					stringBuilder.append(delimiter).append(String.valueOf(USBUtils.toInt(buffer[i])));
 				} else {
@@ -87,7 +87,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 				}
 			}
 		} else if (receiveDataFormat.equals(Consts.HEXADECIMAL)) {
-			for (int i = 0; i < getPacketSize(); i++) {
+			for (int i = 0; i < buffer.length; i++) {
 				if (buffer[i] != 0) {
 					stringBuilder.append(delimiter).append(Integer.toHexString(buffer[i]));
 				} else {
@@ -95,7 +95,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 				}
 			}
 		} else if (receiveDataFormat.equals(Consts.TEXT)) {
-			for (int i = 0; i < getPacketSize(); i++) {
+			for (int i = 0; i < buffer.length; i++) {
 				if (buffer[i] != 0) {
 					stringBuilder.append(String.valueOf((char) buffer[i]));
 				} else {
@@ -103,7 +103,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 				}
 			}
 		} else if (receiveDataFormat.equals(Consts.BINARY)) {
-			for (int i = 0; i < getPacketSize(); i++) {
+			for (int i = 0; i < buffer.length; i++) {
 				if (buffer[i] != 0) {
 					stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
 				} else {

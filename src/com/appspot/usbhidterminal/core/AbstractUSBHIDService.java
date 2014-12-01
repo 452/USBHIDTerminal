@@ -223,10 +223,6 @@ public abstract class AbstractUSBHIDService extends Service {
 		}
 	};
 
-	public int getPacketSize() {
-		return packetSize;
-	}
-
 	public void sendResultToUI(int resultCode, Bundle resultData) {
 		resultReceiver.send(resultCode, resultData);
 	}
