@@ -184,31 +184,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		item.setChecked(true);
 		switch (item.getItemId()) {
 		case R.id.menuSettingsReceiveBinary:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.BINARY);
-			editor.commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.BINARY).commit();
 			break;
 		case R.id.menuSettingsReceiveInteger:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.INTEGER);
-			editor.commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.INTEGER).commit();
 			break;
 		case R.id.menuSettingsReceiveHexadecimal:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.HEXADECIMAL);
-			editor.commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.HEXADECIMAL).commit();
 			break;
 		case R.id.menuSettingsReceiveText:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
-			editor.commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT).commit();
 			break;
 		case R.id.menuSettingsDelimiterNone:
-			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NONE);
-			editor.commit();
+			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NONE).commit();
 			break;
 		case R.id.menuSettingsDelimiterNewLine:
-			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NEW_LINE);
+			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NEW_LINE).commit();
 			editor.commit();
 			break;
 		case R.id.menuSettingsDelimiterSpace:
-			editor.putString(Consts.DELIMITER, Consts.DELIMITER_SPACE);
+			editor.putString(Consts.DELIMITER, Consts.DELIMITER_SPACE).commit();
 			editor.commit();
 			break;
 		}
