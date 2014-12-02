@@ -33,7 +33,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private Button btnSend;
 	private Button btnSelectHIDDevice;
 	private Button btnClear;
-	private RadioButton radioButton;
+	private RadioButton rbSendDataType;
 	private String settingsDelimiter;
 
 	private String receiveDataFormat;
@@ -90,8 +90,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		edtxtHidInput = (EditText) findViewById(R.id.edtxtHidInput);
 		edtlogText = (EditText) findViewById(R.id.edtlogText);
 
-		radioButton = (RadioButton) findViewById(R.id.rbSendData);
-		radioButton.setOnClickListener(this);
+		rbSendDataType = (RadioButton) findViewById(R.id.rbSendData);
+		rbSendDataType.setOnClickListener(this);
 
 		mLog("Initialized\nPlease select your USB HID device", false);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -105,9 +105,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			usbService.putExtra(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
 			startService(usbService);
 		}
-		if (v == radioButton) {
+		if (v == rbSendDataType) {
 			usbService.setAction(Consts.ACTION_USB_DATA_TYPE);
-			usbService.putExtra(Consts.ACTION_USB_DATA_TYPE, radioButton.isChecked());
+			usbService.putExtra(Consts.ACTION_USB_DATA_TYPE, rbSendDataType.isChecked());
 			startService(usbService);
 		}
 		if (v == btnClear) {
