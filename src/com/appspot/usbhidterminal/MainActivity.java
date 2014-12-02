@@ -28,7 +28,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private Intent usbService;
 	private USBServiceResultReceiver usbServiceResultReceiver;
 
-	private EditText log_txt;
+	private EditText edtlogText;
 	private EditText edtxtHidInput;
 	private Button btnSend;
 	private Button btnSelectHIDDevice;
@@ -88,7 +88,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		btnClear.setOnClickListener(this);
 
 		edtxtHidInput = (EditText) findViewById(R.id.edtxtHidInput);
-		log_txt = (EditText) findViewById(R.id.log_txt);
+		edtlogText = (EditText) findViewById(R.id.edtlogText);
 
 		radioButton = (RadioButton) findViewById(R.id.rbSendData);
 		radioButton.setOnClickListener(this);
@@ -111,7 +111,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			startService(usbService);
 		}
 		if (v == btnClear) {
-			log_txt.setText("");
+			edtlogText.setText("");
 		}
 		if (v == btnSelectHIDDevice) {
 			usbService.setAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
@@ -228,10 +228,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	private void mLog(String log, boolean newLine) {
 		if (newLine) {
-			log_txt.append(Consts.NEW_LINE);
+			edtlogText.append(Consts.NEW_LINE);
 		}
-		log_txt.append(log);
-		log_txt.setSelection(log_txt.getText().length());
+		edtlogText.append(log);
+		edtlogText.setSelection(edtlogText.getText().length());
 	}
 
 	private void setVersionToTitle() {
