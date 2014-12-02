@@ -200,11 +200,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			break;
 		case R.id.menuSettingsDelimiterNewLine:
 			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NEW_LINE).commit();
-			editor.commit();
 			break;
 		case R.id.menuSettingsDelimiterSpace:
 			editor.putString(Consts.DELIMITER, Consts.DELIMITER_SPACE).commit();
-			editor.commit();
 			break;
 		}
 
