@@ -1,6 +1,6 @@
 package com.appspot.usbhidterminal.core;
 
-public final class Consts {
+public abstract class Consts {
 	public static final String CONNECTION = "CONNECTION";
 	public static final String END_POINT_READ = "END_POINT_READ";
 	public static final String BINARY = "binary";
