@@ -49,17 +49,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		protected void onReceiveResult(int resultCode, Bundle resultData) {
 			if (resultCode == Consts.ACTION_USB_LOG) {
 				mLog(resultData.getString("log"), false);
-			}
-			if (resultCode == Consts.ACTION_USB_LOG_C) {
+			} else if (resultCode == Consts.ACTION_USB_LOG_C) {
 				mLog(resultData.getString("log"), true);
-			}
-			if (resultCode == Consts.ACTION_USB_DEVICE_ATTACHED) {
+			} else if (resultCode == Consts.ACTION_USB_DEVICE_ATTACHED) {
 				btnSend.setEnabled(true);
-			}
-			if (resultCode == Consts.ACTION_USB_DEVICE_DETACHED) {
+			} else if (resultCode == Consts.ACTION_USB_DEVICE_DETACHED) {
 				btnSend.setEnabled(false);
-			}
-			if (resultCode == Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT) {
+			} else if (resultCode == Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT) {
 				showListOfDevices(resultData.getCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST));
 			}
 		}
