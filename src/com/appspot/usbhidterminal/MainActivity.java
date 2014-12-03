@@ -104,16 +104,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			usbService.setAction(Consts.ACTION_USB_SEND_DATA);
 			usbService.putExtra(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
 			startService(usbService);
-		}
-		if (v == rbSendDataType) {
+		} else if (v == rbSendDataType) {
 			usbService.setAction(Consts.ACTION_USB_DATA_TYPE);
 			usbService.putExtra(Consts.ACTION_USB_DATA_TYPE, rbSendDataType.isChecked());
 			startService(usbService);
-		}
-		if (v == btnClear) {
+		} else if (v == btnClear) {
 			edtlogText.setText("");
-		}
-		if (v == btnSelectHIDDevice) {
+		} else if (v == btnSelectHIDDevice) {
 			usbService.setAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
 			startService(usbService);
 		}
