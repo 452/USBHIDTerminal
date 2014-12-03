@@ -68,12 +68,9 @@ public abstract class AbstractUSBHIDService extends Service {
 		}
 		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
 			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
-		}
-		if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
+		} else if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
 			sendData(intent.getStringExtra(Consts.ACTION_USB_SEND_DATA), sendedDataType);
-		}
-		onCommand(intent, action, flags, startId);
-		if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
+		} else if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
 			mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 			List<CharSequence> list = new LinkedList<CharSequence>();
 			for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
@@ -84,11 +81,11 @@ public abstract class AbstractUSBHIDService extends Service {
 			Bundle bundle = new Bundle();
 			bundle.putCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST, devicesName);
 			sendResultToUI(Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT, bundle);
-		}
-		if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
+		} else if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
 			device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
 			mUsbManager.requestPermission(device, mPermissionIntent);
 		}
+		onCommand(intent, action, flags, startId);
 		return START_REDELIVER_INTENT;
 	}
 
