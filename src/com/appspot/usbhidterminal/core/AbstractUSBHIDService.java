@@ -107,35 +107,24 @@ public abstract class AbstractUSBHIDService extends Service {
 
 		@Override
 		public void run() {
-			try {
-				if (connection != null && endPointRead != null) {
-					final byte[] buffer = new byte[packetSize];
-
-					while (!isStopped) {
-						final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
+			if (connection != null && endPointRead != null) {
+				final byte[] buffer = new byte[packetSize];
+				while (!isStopped) {
+					final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
+					if (status >= 0) {
 						uiHandler.post(new Runnable() {
 							@Override
 							public void run() {
-								if (status >= 0) {
-									onUSBDataReceive(buffer);
-								}
+								onUSBDataReceive(buffer);
 							}
 						});
 					}
 				}
-			} catch (Exception e) {
-				// mLog("Exception: " + e.getLocalizedMessage());
-				Log.e("setupReceiver", e.getMessage(), e);
 			}
-			if (isInterrupted()) {
-				return;
-			}
-
 		}
 
 		public void stopThis() {
 			isStopped = true;
-			this.interrupt();
 		}
 	}
 
