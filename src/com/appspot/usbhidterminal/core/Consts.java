@@ -28,4 +28,7 @@ public abstract class Consts {
 	public static final int ACTION_USB_LOG = 4;
 	public static final int ACTION_USB_LOG_C = 5;
 	public static final int ACTION_USB_SHOW_DEVICES_LIST_RESULT = 6;
+
+	private Consts() {
+	}
 }
