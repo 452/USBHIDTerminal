@@ -163,7 +163,7 @@ public abstract class AbstractUSBHIDService extends Service {
 			if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
 				setDevice(intent);
 				if (device == null) {
-					onDeviceConnected();
+					onDeviceConnected(device);
 				}
 			}
 			if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
@@ -171,7 +171,7 @@ public abstract class AbstractUSBHIDService extends Service {
 					device = null;
 					usbThreadDataReceiver.stopThis();
 					sendResultToUI(Consts.ACTION_USB_DEVICE_DETACHED, null);
-					onDeviceDisconnected();
+					onDeviceDisconnected(device);
 				}
 			}
 		}
@@ -219,10 +219,10 @@ public abstract class AbstractUSBHIDService extends Service {
 	public void onUSBDataReceive(byte[] buffer) {
 	}
 
-	public void onDeviceConnected() {
+	public void onDeviceConnected(UsbDevice device) {
 	}
 
-	public void onDeviceDisconnected() {
+	public void onDeviceDisconnected(UsbDevice device) {
 	}
 
 	public void onDeviceSelected(UsbDevice device) {

@@ -33,12 +33,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 	}
 
 	@Override
-	public void onDeviceConnected() {
+	public void onDeviceConnected(UsbDevice device) {
 		mLog("device connected");
 	}
 
 	@Override
-	public void onDeviceDisconnected() {
+	public void onDeviceDisconnected(UsbDevice device) {
 		mLog("device disconnected");
 	}
 
