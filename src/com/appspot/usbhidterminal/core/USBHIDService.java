@@ -60,12 +60,8 @@ public class USBHIDService extends AbstractUSBHIDService {
 	@Override
 	public void onUSBDataSended(int status, byte[] out) {
 		mLog("sended " + status + " bytes");
-		for (int i = 0; i < out.length; i++) {
-			if (out[i] != 0) {
-				mLogC(Consts.SPACE + USBUtils.toInt(out[i]));
-			} else {
-				break;
-			}
+		for (int i = 0; i < out.length && out[i] != 0; i++) {
+			mLogC(Consts.SPACE + USBUtils.toInt(out[i]));
 		}
 	}
 
@@ -79,36 +75,20 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 		StringBuilder stringBuilder = new StringBuilder();
 		if (receiveDataFormat.equals(Consts.INTEGER)) {
-			for (int i = 0; i < buffer.length; i++) {
-				if (buffer[i] != 0) {
-					stringBuilder.append(delimiter).append(String.valueOf(USBUtils.toInt(buffer[i])));
-				} else {
-					break;
-				}
+			for (int i = 0; i < buffer.length && buffer[i] != 0; i++) {
+				stringBuilder.append(delimiter).append(String.valueOf(USBUtils.toInt(buffer[i])));
 			}
 		} else if (receiveDataFormat.equals(Consts.HEXADECIMAL)) {
-			for (int i = 0; i < buffer.length; i++) {
-				if (buffer[i] != 0) {
-					stringBuilder.append(delimiter).append(Integer.toHexString(buffer[i]));
-				} else {
-					break;
-				}
+			for (int i = 0; i < buffer.length && buffer[i] != 0; i++) {
+				stringBuilder.append(delimiter).append(Integer.toHexString(buffer[i]));
 			}
 		} else if (receiveDataFormat.equals(Consts.TEXT)) {
-			for (int i = 0; i < buffer.length; i++) {
-				if (buffer[i] != 0) {
-					stringBuilder.append(String.valueOf((char) buffer[i]));
-				} else {
-					break;
-				}
+			for (int i = 0; i < buffer.length && buffer[i] != 0; i++) {
+				stringBuilder.append(String.valueOf((char) buffer[i]));
 			}
 		} else if (receiveDataFormat.equals(Consts.BINARY)) {
-			for (int i = 0; i < buffer.length; i++) {
-				if (buffer[i] != 0) {
-					stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
-				} else {
-					break;
-				}
+			for (int i = 0; i < buffer.length && buffer[i] != 0; i++) {
+				stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
 			}
 		}
 		stringBuilder.append("\nreceived ").append(buffer.length).append(" bytes");
