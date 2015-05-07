@@ -177,25 +177,25 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		item.setChecked(true);
 		switch (item.getItemId()) {
 		case R.id.menuSettingsReceiveBinary:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.BINARY).commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.BINARY).apply();
 			break;
 		case R.id.menuSettingsReceiveInteger:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.INTEGER).commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.INTEGER).apply();
 			break;
 		case R.id.menuSettingsReceiveHexadecimal:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.HEXADECIMAL).commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.HEXADECIMAL).apply();
 			break;
 		case R.id.menuSettingsReceiveText:
-			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT).commit();
+			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT).apply();
 			break;
 		case R.id.menuSettingsDelimiterNone:
-			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NONE).commit();
+			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NONE).apply();
 			break;
 		case R.id.menuSettingsDelimiterNewLine:
-			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NEW_LINE).commit();
+			editor.putString(Consts.DELIMITER, Consts.DELIMITER_NEW_LINE).apply();
 			break;
 		case R.id.menuSettingsDelimiterSpace:
-			editor.putString(Consts.DELIMITER, Consts.DELIMITER_SPACE).commit();
+			editor.putString(Consts.DELIMITER, Consts.DELIMITER_SPACE).apply();
 			break;
 		}
 
