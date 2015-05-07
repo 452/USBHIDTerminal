@@ -73,11 +73,11 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		setVersionToTitle();
 		initUI();
 	}
 
 	private void initUI() {
+		setVersionToTitle();
 		btnSend = (Button) findViewById(R.id.btnSend);
 		btnSend.setOnClickListener(this);
 
