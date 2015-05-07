@@ -85,7 +85,7 @@
         </LinearLayout>
 
         <EditText
-            android:id="@+id/log_txt"
+            android:id="@+id/edtlogText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top"
