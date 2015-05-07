@@ -21,7 +21,7 @@ import android.widget.RadioButton;
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBHIDService;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	private SharedPreferences sharedPreferences;
 
