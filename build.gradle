@@ -36,5 +36,15 @@ android {
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
         }
+	androidTest.setRoot('tests')
+        androidTest.java.srcDirs = ['tests/src']
     }
+}
+
+task adbConfig(type: Exec) {
+    commandLine 'adb', 'connect', '192.168.1.45:5555'
+}
+
+task tst(dependsOn: ['adbConfig', 'connectedAndroidTest']) {
+
 }
