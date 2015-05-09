@@ -1,5 +1,6 @@
 package com.appspot.usbhidterminal.core;
 
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.hardware.usb.UsbRequest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -108,14 +110,18 @@ public abstract class AbstractUSBHIDService extends Service {
 		@Override
 		public void run() {
 			if (connection != null && endPointRead != null) {
+				UsbRequest request = new UsbRequest();
+				UsbRequest requestQueued = null;
+				request.initialize(connection, endPointRead);
+				final ByteBuffer buff = ByteBuffer.allocate(packetSize + 1);
 				while (!isStopped) {
-					final byte[] buffer = new byte[packetSize];
-					final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
-					if (status >= 0) {
+					request.queue(buff, packetSize);
+					requestQueued = connection.requestWait();
+					if (request.equals(requestQueued)){
 						uiHandler.post(new Runnable() {
 							@Override
 							public void run() {
-								onUSBDataReceive(buffer);
+								onUSBDataReceive(buff.array());
 							}
 						});
 					}
