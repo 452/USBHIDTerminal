@@ -108,8 +108,8 @@ public abstract class AbstractUSBHIDService extends Service {
 		@Override
 		public void run() {
 			if (connection != null && endPointRead != null) {
-				final byte[] buffer = new byte[packetSize];
 				while (!isStopped) {
+					final byte[] buffer = new byte[packetSize];
 					final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
 					if (status >= 0) {
 						uiHandler.post(new Runnable() {
