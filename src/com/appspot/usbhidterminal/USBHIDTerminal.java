@@ -93,9 +93,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		rbSendDataType = (RadioButton) findViewById(R.id.rbSendData);
 		rbSendDataType.setOnClickListener(this);
 
-		mLog("Initialized\nPlease select your USB HID device", false);
+		mLog("Initialized\nPlease select your USB HID device\n", false);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-		edtxtHidInput.setText("129");
+		edtxtHidInput.setText("test");
 		// btnSend.setEnabled(true);
 	}
 

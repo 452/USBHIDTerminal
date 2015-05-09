@@ -34,12 +34,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onDeviceConnected(UsbDevice device) {
-		mLog("device connected");
+		mLogC("device connected");
 	}
 
 	@Override
 	public void onDeviceDisconnected(UsbDevice device) {
-		mLog("device disconnected");
+		mLogC("device disconnected");
 	}
 
 	@Override
@@ -54,12 +54,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onUSBDataSending(String data) {
-		mLog("Sending: " + data);
+		mLogC("Sending: " + data);
 	}
 
 	@Override
 	public void onUSBDataSended(int status, byte[] out) {
-		mLog("sended " + status + " bytes");
+		mLogC("Sended " + status + " bytes");
 		for (int i = 0; i < out.length && out[i] != 0; i++) {
 			mLogC(Consts.SPACE + USBUtils.toInt(out[i]));
 		}
@@ -67,7 +67,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onSendingError(Exception e) {
-		mLog("Please check your bytes, sent as text");
+		mLogC("Please check your bytes, sent as text");
 	}
 
 	@Override
@@ -91,8 +91,8 @@ public class USBHIDService extends AbstractUSBHIDService {
 				stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
 			}
 		}
-		stringBuilder.append("\nreceived ").append(buffer.length).append(" bytes");
-		mLog(stringBuilder.toString());
+		stringBuilder.append("\nReceived ").append(buffer.length).append(" bytes");
+		mLogC(stringBuilder.toString());
 	}
 
 	private void mLog(String value) {
