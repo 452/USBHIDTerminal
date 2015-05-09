@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBHIDService;
@@ -33,6 +34,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private Button btnSend;
 	private Button btnSelectHIDDevice;
 	private Button btnClear;
+	private RadioButton rbSendText;
 	private RadioButton rbSendDataType;
 	private String settingsDelimiter;
 
@@ -91,7 +93,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		edtlogText = (EditText) findViewById(R.id.edtlogText);
 
 		rbSendDataType = (RadioButton) findViewById(R.id.rbSendData);
+		rbSendText = (RadioButton) findViewById(R.id.rbSendText);
 		rbSendDataType.setOnClickListener(this);
+		rbSendText.setOnClickListener(this);
 
 		mLog("Initialized\nPlease select your USB HID device\n", false);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -102,7 +106,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	public void onClick(View v) {
 		if (v == btnSend) {
 			sendToUSBService(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
-		} else if (v == rbSendDataType) {
+		} else if (v == rbSendText || v == rbSendDataType) {
 			sendToUSBService(Consts.ACTION_USB_DATA_TYPE, rbSendDataType.isChecked());
 		} else if (v == btnClear) {
 			edtlogText.setText("");
