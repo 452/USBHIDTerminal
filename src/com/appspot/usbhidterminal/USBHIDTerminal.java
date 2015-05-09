@@ -101,18 +101,13 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	public void onClick(View v) {
 		if (v == btnSend) {
-			usbService.setAction(Consts.ACTION_USB_SEND_DATA);
-			usbService.putExtra(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
-			startService(usbService);
+			sendToUSBService(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
 		} else if (v == rbSendDataType) {
-			usbService.setAction(Consts.ACTION_USB_DATA_TYPE);
-			usbService.putExtra(Consts.ACTION_USB_DATA_TYPE, rbSendDataType.isChecked());
-			startService(usbService);
+			sendToUSBService(Consts.ACTION_USB_DATA_TYPE, rbSendDataType.isChecked());
 		} else if (v == btnClear) {
 			edtlogText.setText("");
 		} else if (v == btnSelectHIDDevice) {
-			usbService.setAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
-			startService(usbService);
+			sendToUSBService(Consts.ACTION_USB_SHOW_DEVICES_LIST);
 		}
 	}
 
@@ -128,9 +123,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		builder.setItems(devicesName, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				usbService.setAction(Consts.ACTION_USB_SELECT_DEVICE);
-				usbService.putExtra(Consts.ACTION_USB_SELECT_DEVICE, which);
-				startService(usbService);
+				sendToUSBService(Consts.ACTION_USB_SELECT_DEVICE, which);
 			}
 		});
 		builder.setCancelable(true);
@@ -221,6 +214,26 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
 		usbService.putExtra(Consts.DELIMITER, delimiter);
 		startService(usbService);
+	}
+
+	void sendToUSBService(String action) {
+		usbService.setAction(action);
+		startService(usbService);
+	}
+
+	void sendToUSBService(String action, String data) {
+		usbService.putExtra(action, data);
+		sendToUSBService(action);
+	}
+
+	void sendToUSBService(String action, boolean data) {
+		usbService.putExtra(action, data);
+		sendToUSBService(action);
+	}
+
+	void sendToUSBService(String action, int data) {
+		usbService.putExtra(action, data);
+		sendToUSBService(action);
 	}
 
 	private void mLog(String log, boolean newLine) {
