@@ -17,7 +17,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBHIDService;
