@@ -68,6 +68,7 @@ public abstract class AbstractUSBHIDService extends Service {
 		filter.addAction(Consts.ACTION_USB_SELECT_DEVICE);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
+		eventBus.register(this);
 	}
 
 	@Override

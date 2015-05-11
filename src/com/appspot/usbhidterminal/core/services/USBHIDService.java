@@ -2,10 +2,10 @@ package com.appspot.usbhidterminal.core.services;
 
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
-import android.os.Bundle;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 
 public class USBHIDService extends AbstractUSBHIDService {
@@ -34,12 +34,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onDeviceConnected(UsbDevice device) {
-		mLogC("device connected");
+		mLog("device connected");
 	}
 
 	@Override
 	public void onDeviceDisconnected(UsbDevice device) {
-		mLogC("device disconnected");
+		mLog("device disconnected");
 	}
 
 	@Override
@@ -54,12 +54,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onUSBDataSending(String data) {
-		mLogC("Sending: " + data);
+		mLog("Sending: " + data);
 	}
 
 	@Override
 	public void onUSBDataSended(int status, byte[] out) {
-		mLogC("Sended " + status + " bytes");
+		mLog("Sended " + status + " bytes");
 		for (int i = 0; i < out.length && out[i] != 0; i++) {
 			mLog(Consts.SPACE + USBUtils.toInt(out[i]));
 		}
@@ -67,7 +67,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onSendingError(Exception e) {
-		mLogC("Please check your bytes, sent as text");
+		mLog("Please check your bytes, sent as text");
 	}
 
 	@Override
@@ -96,16 +96,8 @@ public class USBHIDService extends AbstractUSBHIDService {
 		eventBus.post(new USBDataReceiveEvent(stringBuilder.toString()));
 	}
 
-	private void mLog(String value) {
-		Bundle bundle = new Bundle();
-		bundle.putString("log", value);
-		sendResultToUI(Consts.ACTION_USB_LOG, bundle);
-	}
-
-	private void mLogC(String value) {
-		Bundle bundle = new Bundle();
-		bundle.putString("log", value);
-		sendResultToUI(Consts.ACTION_USB_LOG_C, bundle);
+	private void mLog(String log) {
+		eventBus.post(new LogMessageEvent(log));
 	}
 
 }

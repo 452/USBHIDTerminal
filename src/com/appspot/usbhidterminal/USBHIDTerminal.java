@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +19,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 
 import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 import com.appspot.usbhidterminal.core.services.USBHIDService;
@@ -56,11 +56,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 		@Override
 		protected void onReceiveResult(int resultCode, Bundle resultData) {
-			if (resultCode == Consts.ACTION_USB_LOG) {
-				mLog(resultData.getString("log"), false);
-			} else if (resultCode == Consts.ACTION_USB_LOG_C) {
-				mLog(resultData.getString("log"), true);
-			} else if (resultCode == Consts.ACTION_USB_DEVICE_ATTACHED) {
+			if (resultCode == Consts.ACTION_USB_DEVICE_ATTACHED) {
 				btnSend.setEnabled(true);
 			} else if (resultCode == Consts.ACTION_USB_DEVICE_DETACHED) {
 				btnSend.setEnabled(false);
@@ -145,7 +141,11 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	}
 
 	public void onEvent(USBDataReceiveEvent event){
-		mLog(event.getData(),true);
+		mLog(event.getData(), true);
+	}
+
+	public void onEvent(LogMessageEvent event){
+		mLog(event.getData(), true);
 	}
 
 	@Override
