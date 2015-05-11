@@ -11,8 +11,18 @@ buildscript {
 
 apply plugin: 'com.android.application'
 
+repositories {
+    mavenCentral()
+    maven {
+        url "http://maven.restlet.com/"
+    }
+}
+
 dependencies {
     compile 'com.android.support:support-v4:+'
+    compile 'com.nanohttpd:nanohttpd:2.1.1'
+    compile 'com.nanohttpd:nanohttpd-websocket:2.1.1'
+    compile 'de.greenrobot:eventbus:2.4.0'
 }
 
 android {
@@ -38,6 +48,20 @@ android {
         }
 	androidTest.setRoot('tests')
         androidTest.java.srcDirs = ['tests/src']
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/notice.txt'
+        exclude 'LICENSE.txt'
     }
 }
 

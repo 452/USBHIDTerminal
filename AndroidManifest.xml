@@ -7,6 +7,9 @@
     <uses-feature android:name="android.hardware.usb.host" />
 
     <uses-permission android:name="android.permission.USB_PERMISSION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <uses-sdk
         android:minSdkVersion="12"
@@ -29,7 +32,15 @@
         </activity>
 
         <service
-            android:name=".core.USBHIDService"
+            android:name=".core.services.USBHIDService"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/service_name"/>
+        <service
+            android:name=".core.services.WebServerService"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/service_name"/>
+        <service
+            android:name=".core.services.SocketService"
             android:icon="@drawable/ic_launcher"
             android:label="@string/service_name"/>
     </application>

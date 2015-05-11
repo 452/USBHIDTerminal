@@ -19,7 +19,8 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 
 import com.appspot.usbhidterminal.core.Consts;
-import com.appspot.usbhidterminal.core.USBHIDService;
+import com.appspot.usbhidterminal.core.services.USBHIDService;
+import com.appspot.usbhidterminal.core.services.WebServerService;
 
 public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
@@ -63,11 +64,14 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	}
 
-	private void prepareUSBHIDService() {
+	private void prepareServices() {
 		usbService = new Intent(this, USBHIDService.class);
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
+		Intent webServerService = new Intent(this, WebServerService.class);
+		webServerService.setAction("start");
+		startService(webServerService);
 	}
 
 	@Override
@@ -138,7 +142,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		super.onStart();
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
-		prepareUSBHIDService();
+		prepareServices();
 		setDelimiter();
 	}
 

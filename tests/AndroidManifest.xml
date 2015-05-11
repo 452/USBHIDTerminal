@@ -8,6 +8,10 @@
         <uses-library android:name="android.test.runner" />
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
     <instrumentation
             android:name="android.test.InstrumentationTestRunner"
             android:targetPackage="com.appspot.usbhidterminal" />

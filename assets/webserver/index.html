@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>USB HID Terminal</title>
+    <style>
+        body {
+        width: 940px;
+        margin: 0 auto;
+        font: 10pt/1.5em Helvetica,"Helvetica neue", Arial, sans-serif;
+        }
+        header,section,article,aside,footer{
+        display: block;
+        }
+        header,footer{
+        text-align:center;
+        }
+    </style>
+    <script language="javascript" type="text/javascript">
+      var wsUri = "ws://"+window.location.host+"/websocket";
+      var output;
+      var websocket;
+      function init() {
+        output = document.getElementById("log");
+        connectToWebSocket();
+      }
+      function connectToWebSocket() {
+          websocket = new WebSocket(wsUri);
+          websocket.onopen = function(evt) {
+            onOpen(evt)
+          };
+          websocket.onclose = function(evt) {
+            onClose(evt)
+          };
+          websocket.onmessage = function(evt) {
+            onMessage(evt)
+          };
+          websocket.onerror = function(evt) {
+            onError(evt)
+          };
+      }
+      function onOpen(evt) { writeToScreen("CONNECTED");
+        doSend("WebSocket rocks");
+      }
+      function onClose(evt) {
+        writeToScreen("DISCONNECTED");
+      }
+      function onMessage(evt) {
+        writeToScreen('Received: ' + evt.data);
+        //websocket.close();
+      }
+      function onError(evt) {
+        writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+      }
+      function doSend(message) {
+        writeToScreen("SENT: " + message);
+        websocket.send(message);
+      }
+      function writeToScreen(message) {
+        var pre = document.createElement("p"); pre.style.wordWrap = "break-word"; pre.innerHTML = message; output.appendChild(pre);
+      }
+      window.addEventListener("load", init, false);
+    </script>
+</head>
+<br>
+<header>
+    <h2>USB HID Terminal 1.1.0</h2>
+</header>
+
+<input id="edtData" type="text" value="led3"/>
+<button id="send" onclick="doSend(edtData.value)">Send</button>
+<button id="connect" onclick="connectToWebSocket()">Connect</button>
+<button id="clear" onclick="log.innerText=''">Clear</button>
+<div>
+    <output id="log"/></div>
+<br/>
+<footer>
+    <p>content</p>
+    <a href="https://github.com/452/USBHIDTerminal" target="_blank">GitHub</a>
+</footer>
+</body>
+</html>

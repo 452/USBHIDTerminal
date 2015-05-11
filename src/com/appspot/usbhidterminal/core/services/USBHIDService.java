@@ -1,8 +1,14 @@
-package com.appspot.usbhidterminal.core;
+package com.appspot.usbhidterminal.core.services;
 
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
+
+import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
+
+import de.greenrobot.event.EventBus;
 
 public class USBHIDService extends AbstractUSBHIDService {
 
@@ -93,6 +99,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 			}
 		}
 		stringBuilder.append("\nReceived ").append(i).append(" bytes");
+		EventBus.getDefault().post(new USBDataReceiveEvent(stringBuilder.toString()));
 		mLogC(stringBuilder.toString());
 	}
 

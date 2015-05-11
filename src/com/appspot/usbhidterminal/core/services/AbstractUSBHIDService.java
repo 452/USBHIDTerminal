@@ -1,4 +1,4 @@
-package com.appspot.usbhidterminal.core;
+package com.appspot.usbhidterminal.core.services;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -22,6 +22,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
+
+import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
+import de.greenrobot.event.EventBus;
 
 public abstract class AbstractUSBHIDService extends Service {
 
@@ -60,6 +65,7 @@ public abstract class AbstractUSBHIDService extends Service {
 		filter.addAction(Consts.ACTION_USB_SEND_DATA);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
+		EventBus.getDefault().register(this);
 	}
 
 	@Override
@@ -93,6 +99,7 @@ public abstract class AbstractUSBHIDService extends Service {
 
 	@Override
 	public void onDestroy() {
+		EventBus.getDefault().unregister(this);
 		super.onDestroy();
 		if (usbThreadDataReceiver != null) {
 			usbThreadDataReceiver.stopThis();
@@ -132,6 +139,10 @@ public abstract class AbstractUSBHIDService extends Service {
 		public void stopThis() {
 			isStopped = true;
 		}
+	}
+
+	public void onEventMainThread(USBDataSendEvent event){
+		sendData(event.getData(), sendedDataType);
 	}
 
 	private void sendData(String data, boolean sendAsString) {
