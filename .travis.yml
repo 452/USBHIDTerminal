@@ -1,0 +1,22 @@
+language: android
+
+jdk:
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
+
+sudo: false
+
+android:
+  components:
+    - build-tools-22.0.1
+    - android-22
+    - extra
+
+os:
+  - linux
+  - osx
+
+script:
+    - echo "Travis branch is $TRAVIS_BRANCH"
+    - echo "Travis branch is in pull request $TRAVIS_PULL+REQUEST"
