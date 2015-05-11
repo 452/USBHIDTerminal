@@ -72,9 +72,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
-		//Intent webServerService = new Intent(this, WebServerService.class);
-		//webServerService.setAction("start");
-		//startService(webServerService);
+		Intent webServerService = new Intent(this, WebServerService.class);
+		webServerService.setAction("start");
+		startService(webServerService);
 	}
 
 	@Override
@@ -261,7 +261,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 			edtlogText.append(Consts.NEW_LINE);
 		}
 		edtlogText.append(log);
-		edtlogText.setSelection(edtlogText.getText().length());
+		if(edtlogText.getLineCount()>200) {
+			edtlogText.setText("cleared");
+		}
 	}
 
 	private void setVersionToTitle() {

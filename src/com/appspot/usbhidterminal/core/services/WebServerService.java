@@ -6,9 +6,12 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.webserver.WebServer;
 
 import java.io.IOException;
+
+import de.greenrobot.event.EventBus;
 
 public class WebServerService extends Service {
 
@@ -40,8 +43,10 @@ public class WebServerService extends Service {
                     webServer = new WebServer(this.getAssets());
                 }
                 webServer.start();
+                EventBus.getDefault().post(new LogMessageEvent("Web service launched"));
             } catch (IOException e) {
                 Log.e(tag, "Starting Web Server error", e);
+                EventBus.getDefault().post(new LogMessageEvent("Web service problem: " + e.getMessage()));
             }
         }
         return START_REDELIVER_INTENT;
