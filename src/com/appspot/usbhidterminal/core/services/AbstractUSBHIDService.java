@@ -30,6 +30,8 @@ import de.greenrobot.event.EventBus;
 
 public abstract class AbstractUSBHIDService extends Service {
 
+	private static final String TAG = AbstractUSBHIDService.class.getCanonicalName();
+
 	private USBThreadDataReceiver usbThreadDataReceiver;
 	private ResultReceiver resultReceiver;
 
@@ -48,6 +50,8 @@ public abstract class AbstractUSBHIDService extends Service {
 	private int packetSize;
 	private boolean sendedDataType;
 
+	protected EventBus eventBus = EventBus.getDefault();
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
@@ -62,10 +66,8 @@ public abstract class AbstractUSBHIDService extends Service {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		filter.addAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
 		filter.addAction(Consts.ACTION_USB_SELECT_DEVICE);
-		filter.addAction(Consts.ACTION_USB_SEND_DATA);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
-		EventBus.getDefault().register(this);
 	}
 
 	@Override
@@ -76,8 +78,6 @@ public abstract class AbstractUSBHIDService extends Service {
 		}
 		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
 			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
-		} else if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
-			sendData(intent.getStringExtra(Consts.ACTION_USB_SEND_DATA), sendedDataType);
 		} else if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
 			mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 			List<CharSequence> list = new LinkedList<CharSequence>();
@@ -99,7 +99,7 @@ public abstract class AbstractUSBHIDService extends Service {
 
 	@Override
 	public void onDestroy() {
-		EventBus.getDefault().unregister(this);
+		eventBus.unregister(this);
 		super.onDestroy();
 		if (usbThreadDataReceiver != null) {
 			usbThreadDataReceiver.stopThis();
@@ -110,29 +110,31 @@ public abstract class AbstractUSBHIDService extends Service {
 	private class USBThreadDataReceiver extends Thread {
 
 		private volatile boolean isStopped;
+		private byte[] buffer = new byte[packetSize];
 
 		public USBThreadDataReceiver() {
 		}
 
 		@Override
 		public void run() {
-			if (connection != null && endPointRead != null) {
-				UsbRequest request = new UsbRequest();
-				UsbRequest requestQueued = null;
-				request.initialize(connection, endPointRead);
-				final ByteBuffer buff = ByteBuffer.allocate(packetSize + 1);
-				while (!isStopped) {
-					request.queue(buff, packetSize);
-					requestQueued = connection.requestWait();
-					if (request.equals(requestQueued)){
-						uiHandler.post(new Runnable() {
-							@Override
-							public void run() {
-								onUSBDataReceive(buff.array());
-							}
-						});
+			try {
+				if (connection != null && endPointRead != null) {
+					buffer = new byte[packetSize];
+					while (!isStopped) {
+						final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 100);
+						if (status > 0) {
+							uiHandler.post(new Runnable() {
+								@Override
+								public void run() {
+									onUSBDataReceive(buffer);
+								}
+							});
+
+						}
 					}
 				}
+			} catch (Exception e) {
+				Log.e(TAG, "Error in receive thread", e);
 			}
 		}
 

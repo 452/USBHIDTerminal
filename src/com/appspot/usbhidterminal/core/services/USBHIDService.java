@@ -8,8 +8,6 @@ import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 
-import de.greenrobot.event.EventBus;
-
 public class USBHIDService extends AbstractUSBHIDService {
 
 	private String delimiter;
@@ -22,8 +20,6 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onCommand(Intent intent, String action, int flags, int startId) {
-		// Toast.makeText(this, "Service onCommand ...",
-		// Toast.LENGTH_SHORT).show();
 		if (Consts.RECEIVE_DATA_FORMAT.equals(action)) {
 			receiveDataFormat = intent.getStringExtra(Consts.RECEIVE_DATA_FORMAT);
 			delimiter = intent.getStringExtra(Consts.DELIMITER);
@@ -34,8 +30,6 @@ public class USBHIDService extends AbstractUSBHIDService {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		// Toast.makeText(this, "Service destroyed ...",
-		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -99,8 +93,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 			}
 		}
 		stringBuilder.append("\nReceived ").append(i).append(" bytes");
-		EventBus.getDefault().post(new USBDataReceiveEvent(stringBuilder.toString()));
-		mLogC(stringBuilder.toString());
+		eventBus.post(new USBDataReceiveEvent(stringBuilder.toString()));
 	}
 
 	private void mLog(String value) {

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,8 +20,12 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 
 import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
+import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 import com.appspot.usbhidterminal.core.services.USBHIDService;
 import com.appspot.usbhidterminal.core.services.WebServerService;
+
+import de.greenrobot.event.EventBus;
 
 public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
@@ -40,6 +45,8 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	private String receiveDataFormat;
 	private String delimiter;
+
+	protected EventBus eventBus = EventBus.getDefault();
 
 	class USBServiceResultReceiver extends ResultReceiver {
 
@@ -108,7 +115,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	public void onClick(View v) {
 		if (v == btnSend) {
-			sendToUSBService(Consts.ACTION_USB_SEND_DATA, edtxtHidInput.getText().toString());
+			eventBus.post(new USBDataSendEvent(edtxtHidInput.getText().toString()));
 		} else if (v == rbSendText || v == rbSendDataType) {
 			sendToUSBService(Consts.ACTION_USB_DATA_TYPE, rbSendDataType.isChecked());
 		} else if (v == btnClear) {
@@ -137,6 +144,10 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		builder.show();
 	}
 
+	public void onEvent(USBDataReceiveEvent event){
+		mLog(event.getData(),true);
+	}
+
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -144,6 +155,13 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
 		prepareServices();
 		setDelimiter();
+		eventBus.register(this);
+	}
+
+	@Override
+	protected void onStop() {
+		eventBus.unregister(this);
+		super.onStop();
 	}
 
 	@Override
