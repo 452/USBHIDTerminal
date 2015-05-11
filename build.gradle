@@ -13,9 +13,6 @@ apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
-    maven {
-        url "http://maven.restlet.com/"
-    }
 }
 
 dependencies {
