@@ -69,9 +69,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
-		Intent webServerService = new Intent(this, WebServerService.class);
-		webServerService.setAction("start");
-		startService(webServerService);
+		//Intent webServerService = new Intent(this, WebServerService.class);
+		//webServerService.setAction("start");
+		//startService(webServerService);
 	}
 
 	@Override
