@@ -246,11 +246,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		startService(usbService);
 	}
 
-	void sendToUSBService(String action, String data) {
-		usbService.putExtra(action, data);
-		sendToUSBService(action);
-	}
-
 	void sendToUSBService(String action, boolean data) {
 		usbService.putExtra(action, data);
 		sendToUSBService(action);
