@@ -1,5 +1,6 @@
 USBHIDTerminal for Android
 ==============
+[![Build Status](https://travis-ci.org/452/USBHIDTerminal.svg?branch=develop)](https://travis-ci.org/452/USBHIDTerminal)
 
 This application was created in my hobby time.
 
