@@ -1,0 +1,12 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+    <!-- Strings related to Settings -->
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+    <string name="pref_title_web_server">Enable WebServer</string>
+    <string name="pref_title_socket_server">Enable SocketServer</string>
+    <string name="pref_title_web_server_port">Web Server port</string>
+    <string name="pref_default_web_server_port">5789</string>
+    <string name="pref_title_socket_server_port">Socket Server port</string>
+    <string name="pref_default_socket_server_port">7789</string>
+</resources>

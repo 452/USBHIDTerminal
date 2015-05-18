@@ -25,6 +25,7 @@ public abstract class Consts {
 	public static final String ACTION_USB_DATA_TYPE = "ACTION_USB_DATA_TYPE";
 	public static final String ACTION_USB_SELECT_DEVICE = "ACTION_USB_SELECT_DEVICE";
 	public static final int ACTION_USB_SHOW_DEVICES_LIST_RESULT = 6;
+	public static final int RESULT_SETTINGS = 7;
 
 	private Consts() {
 	}

@@ -72,9 +72,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
-		Intent webServerService = new Intent(this, WebServerService.class);
-		webServerService.setAction("start");
-		startService(webServerService);
+//		Intent webServerService = new Intent(this, WebServerService.class);
+//		webServerService.setAction("start");
+//		startService(webServerService);
 	}
 
 	@Override
@@ -198,6 +198,10 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		SharedPreferences.Editor editor = sharedPreferences.edit();
 		item.setChecked(true);
 		switch (item.getItemId()) {
+		case R.id.menuSettings:
+			Intent i = new Intent(this, SettingsActivity.class);
+			startActivityForResult(i, Consts.RESULT_SETTINGS);
+			break;
 		case R.id.menuSettingsReceiveBinary:
 			editor.putString(Consts.RECEIVE_DATA_FORMAT, Consts.BINARY).apply();
 			break;

@@ -1,0 +1,33 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="enable_web_server"
+        android:title="@string/pref_title_web_server"
+        android:defaultValue="false" />
+    <CheckBoxPreference
+        android:key="enable_socket_server"
+        android:title="@string/pref_title_socket_server"
+        android:defaultValue="false" />
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <EditTextPreference
+        android:key="web_server_port"
+        android:title="@string/pref_title_web_server_port"
+        android:defaultValue="@string/pref_default_web_server_port"
+        android:selectAllOnFocus="true"
+        android:inputType="number"
+        android:numeric="integer"
+        android:maxLength="4"
+        android:singleLine="true"
+        android:maxLines="1" />
+    <EditTextPreference
+        android:key="socket_server_port"
+        android:title="@string/pref_title_socket_server_port"
+        android:defaultValue="@string/pref_default_socket_server_port"
+        android:selectAllOnFocus="true"
+        android:inputType="number"
+        android:numeric="integer"
+        android:maxLength="4"
+        android:singleLine="true"
+        android:maxLines="1" />
+</PreferenceScreen>
