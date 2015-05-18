@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">USB HID Terminal</string>
-    <string name="service_name">USB HID Terminal</string>
+    <string name="web_server">Web Server</string>
+    <string name="socket_server">Socket Server</string>
+    <string name="action_exit">Exit</string>
     <string name="settings">Settings</string>
     <string name="receiveDataFormat">Receive data format</string>
     <string name="integer">Integer</string>

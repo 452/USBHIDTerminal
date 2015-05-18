@@ -2,6 +2,7 @@ package com.appspot.usbhidterminal;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -72,9 +73,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
-//		Intent webServerService = new Intent(this, WebServerService.class);
-//		webServerService.setAction("start");
-//		startService(webServerService);
+		Intent webServerService = new Intent(this, WebServerService.class);
+		webServerService.setAction("start");
+		startService(webServerService);
 	}
 
 	@Override
@@ -228,6 +229,29 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
 		setDelimiter();
 		return true;
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		String action = intent.getAction();
+		if (action == null) {
+			return;
+		}
+		switch (action) {
+			case Consts.WEB_SERVER_CLOSE_ACTION:
+				stopService(new Intent(this, WebServerService.class));
+				((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.WEB_SERVER_NOTIFICATION);
+				break;
+			case Consts.USB_HID_TERMINAL_CLOSE_ACTION:
+				stopService(new Intent(this, USBHIDService.class));
+				((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.USB_HID_TERMINAL_NOTIFICATION);
+				break;
+			case Consts.SOCKET_SERVER_CLOSE_ACTION:
+				stopService(new Intent(this, USBHIDService.class));
+				((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.SOCKET_SERVER_NOTIFICATION);
+				break;
+		}
 	}
 
 	private void setDelimiter() {
