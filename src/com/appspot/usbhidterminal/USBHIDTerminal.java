@@ -23,6 +23,7 @@ import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
+import com.appspot.usbhidterminal.core.services.SocketService;
 import com.appspot.usbhidterminal.core.services.USBHIDService;
 import com.appspot.usbhidterminal.core.services.WebServerService;
 
@@ -73,9 +74,11 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
 		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
+		/*
 		Intent webServerService = new Intent(this, WebServerService.class);
 		webServerService.setAction("start");
-		startService(webServerService);
+		startService(webServerService);*/
+		socketServiceIsStart(true);
 	}
 
 	@Override
@@ -291,6 +294,17 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		edtlogText.append(log);
 		if(edtlogText.getLineCount()>200) {
 			edtlogText.setText("cleared");
+		}
+	}
+
+	private void socketServiceIsStart(boolean isStart) {
+		if (isStart) {
+			Intent socketServerService = new Intent(this, SocketService.class);
+			socketServerService.setAction("start");
+			socketServerService.putExtra("SOCKET_PORT", 7899);
+			startService(socketServerService);
+		} else {
+			stopService(new Intent(this, SocketService.class));
 		}
 	}
 

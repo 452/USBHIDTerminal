@@ -22,7 +22,7 @@ import de.greenrobot.event.EventBus;
 
 public class WebServerService extends Service {
 
-    private static final String tag = WebServerService.class.getCanonicalName();
+    private static final String TAG = WebServerService.class.getCanonicalName();
     public static final String CLOSE_ACTION = "close";
     private final IBinder webServerServiceBinder = new LocalBinder();
     private WebServer webServer;
