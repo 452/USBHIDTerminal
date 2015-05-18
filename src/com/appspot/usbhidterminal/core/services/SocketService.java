@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -34,6 +35,7 @@ public class SocketService extends Service {
     private SocketThreadDataReceiver socketThreadDataReceiver;
     private BufferedReader in;
     private DataOutputStream out;
+    private ServerSocket serverSocket;
     private Socket socket;
 
     private final IBinder socketServiceBinder = new LocalBinder();
@@ -50,16 +52,25 @@ public class SocketService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.v(">>>>>>>>>>>>>>>", "Exit serv");
         if (socketThreadDataReceiver != null) {
             socketThreadDataReceiver.stopThis();
         }
         if (socket != null) {
             try {
+                socket.shutdownInput();
+                socket.shutdownOutput();
                 in.close();
                 out.close();
                 socket.close();
             } catch (IOException e) {
-                Log.e(TAG, "Close streams" , e);
+                Log.e(TAG, "Close streams", e);
+            }
+        }
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
             }
         }
         eventBus.unregister(this);
@@ -89,34 +100,32 @@ public class SocketService extends Service {
         return START_REDELIVER_INTENT;
     }
 
-    private void waitingForConnection() {
+    private void setup() {
         try {
-            try {
-                ServerSocket serverSocket = new ServerSocket(socketPort);
-                Log.v("Socket", "Waiting connection! Port: " + socketPort);
-                socket = serverSocket.accept();
-                out = new DataOutputStream(socket.getOutputStream());
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out.writeChars("Hello from USBHIDTerminal\n");
-                if (socketThreadDataReceiver == null) {
-                    socketThreadDataReceiver = new SocketThreadDataReceiver();
-                    socketThreadDataReceiver.start();
-                }
-            } catch (IOException e) {
-                Log.w(TAG, e);
-                //out.close();
-                //socket.close();
-                waitingForConnection();
-            } finally {
-                //out.close();
-                //socket.close();
-            }
-        } catch (Exception e1) {
-            e1.printStackTrace();
+            serverSocket = new ServerSocket(socketPort);
+            serverSocket.setReuseAddress(true);
+            Log.v("Socket", "Waiting connection! Port: " + socketPort);
+            waitingForConnection();
+            socketThreadDataReceiver = new SocketThreadDataReceiver();
+            socketThreadDataReceiver.start();
+        } catch (BindException e) {
+        } catch (IOException e) {
+            //Log.w(TAG, e);
         }
     }
 
-    public void onEvent(USBDataReceiveEvent event){
+    private void waitingForConnection() {
+        try {
+            socket = serverSocket.accept();
+            out = new DataOutputStream(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out.writeChars("Hello from USBHIDTerminal\n");
+        } catch (IOException e) {
+            Log.w(TAG, e);
+        }
+    }
+
+    public void onEvent(USBDataReceiveEvent event) {
         if (socket != null && socket.isConnected()) {
             try {
                 out.writeBytes(event.getData());
@@ -137,7 +146,12 @@ public class SocketService extends Service {
             try {
                 if (socket != null && socket.isConnected()) {
                     while (!isStopped) {
-                        eventBus.post(new USBDataSendEvent(in.readLine()));
+                        String data = in.readLine();
+                        if (data == null) {
+                            waitingForConnection();
+                        } else {
+                            eventBus.post(new USBDataSendEvent(data));
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -156,7 +170,7 @@ public class SocketService extends Service {
 
         protected String doInBackground(String... urls) {
             try {
-                waitingForConnection();
+                setup();
                 return "";
             } catch (Exception e) {
                 this.exception = e;

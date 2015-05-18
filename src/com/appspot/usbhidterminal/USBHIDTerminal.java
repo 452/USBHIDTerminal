@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,6 +70,16 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	}
 
+	private SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+		@Override
+		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+			if ("enable_socket_server".equals(key) || "socket_server_port".equals(key)) {
+				socketServiceIsStart(false);
+				socketServiceIsStart(sharedPreferences.getBoolean("enable_socket_server", false));
+			}
+		}
+	};
+
 	private void prepareServices() {
 		usbService = new Intent(this, USBHIDService.class);
 		usbServiceResultReceiver = new USBServiceResultReceiver(null);
@@ -78,13 +89,15 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		Intent webServerService = new Intent(this, WebServerService.class);
 		webServerService.setAction("start");
 		startService(webServerService);*/
-		socketServiceIsStart(true);
+		socketServiceIsStart(sharedPreferences.getBoolean("enable_socket_server", false));
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
 		initUI();
 	}
 
@@ -155,7 +168,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
 		prepareServices();
 		setDelimiter();
@@ -301,7 +313,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		if (isStart) {
 			Intent socketServerService = new Intent(this, SocketService.class);
 			socketServerService.setAction("start");
-			socketServerService.putExtra("SOCKET_PORT", 7899);
+			socketServerService.putExtra("SOCKET_PORT", Integer.parseInt(sharedPreferences.getString("socket_server_port", "7899")));
 			startService(socketServerService);
 		} else {
 			stopService(new Intent(this, SocketService.class));
