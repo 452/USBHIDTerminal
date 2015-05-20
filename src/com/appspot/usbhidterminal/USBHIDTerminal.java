@@ -195,14 +195,16 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	private void setSelectedMenuItemsFromSettings(Menu menu) {
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
-		if (receiveDataFormat.equals(Consts.BINARY)) {
-			menu.findItem(R.id.menuSettingsReceiveBinary).setChecked(true);
-		} else if (receiveDataFormat.equals(Consts.INTEGER)) {
-			menu.findItem(R.id.menuSettingsReceiveInteger).setChecked(true);
-		} else if (receiveDataFormat.equals(Consts.HEXADECIMAL)) {
-			menu.findItem(R.id.menuSettingsReceiveHexadecimal).setChecked(true);
-		} else if (receiveDataFormat.equals(Consts.TEXT)) {
-			menu.findItem(R.id.menuSettingsReceiveText).setChecked(true);
+		if (receiveDataFormat != null) {
+			if (receiveDataFormat.equals(Consts.BINARY)) {
+				menu.findItem(R.id.menuSettingsReceiveBinary).setChecked(true);
+			} else if (receiveDataFormat.equals(Consts.INTEGER)) {
+				menu.findItem(R.id.menuSettingsReceiveInteger).setChecked(true);
+			} else if (receiveDataFormat.equals(Consts.HEXADECIMAL)) {
+				menu.findItem(R.id.menuSettingsReceiveHexadecimal).setChecked(true);
+			} else if (receiveDataFormat.equals(Consts.TEXT)) {
+				menu.findItem(R.id.menuSettingsReceiveText).setChecked(true);
+			}
 		}
 
 		setDelimiter();
