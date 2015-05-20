@@ -157,11 +157,11 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		builder.show();
 	}
 
-	public void onEvent(USBDataReceiveEvent event){
-		mLog(event.getData(), true);
+	public void onEvent(USBDataReceiveEvent event) {
+		mLog(event.getData() + " \nReceived " + event.getBytesCount() + " bytes", true);
 	}
 
-	public void onEvent(LogMessageEvent event){
+	public void onEvent(LogMessageEvent event) {
 		mLog(event.getData(), true);
 	}
 

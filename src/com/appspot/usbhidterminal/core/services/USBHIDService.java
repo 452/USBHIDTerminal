@@ -98,8 +98,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 				stringBuilder.append(delimiter).append("0b").append(Integer.toBinaryString(Integer.valueOf(buffer[i])));
 			}
 		}
-		stringBuilder.append("\nReceived ").append(i).append(" bytes");
-		eventBus.post(new USBDataReceiveEvent(stringBuilder.toString()));
+		eventBus.post(new USBDataReceiveEvent(stringBuilder.toString(), i));
 	}
 
 	private void mLog(String log) {
