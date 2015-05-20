@@ -31,7 +31,7 @@ public class SocketService extends Service {
     private static final String TAG = SocketService.class.getCanonicalName();
     private static final int DEFAULT_SOCKET_PORT = 7899;
     private EventBus eventBus = EventBus.getDefault();
-    private int socketPort;
+    private int socketPort = DEFAULT_SOCKET_PORT;
     private SocketThreadDataReceiver socketThreadDataReceiver;
     private BufferedReader in;
     private DataOutputStream out;
@@ -48,6 +48,7 @@ public class SocketService extends Service {
         super.onCreate();
         setupNotifications();
         eventBus.register(this);
+        new SocketServerTask().execute();
     }
 
     @Override
@@ -92,7 +93,6 @@ public class SocketService extends Service {
         String action = intent.getAction();
         if (action.equals("start")) {
             socketPort = intent.getIntExtra("SOCKET_PORT", DEFAULT_SOCKET_PORT);
-            new SocketServerTask().execute();
         }
         return START_REDELIVER_INTENT;
     }
