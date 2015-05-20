@@ -49,7 +49,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private String receiveDataFormat;
 	private String delimiter;
 
-	protected EventBus eventBus = EventBus.getDefault();
+	protected EventBus eventBus = EventBus.builder().logNoSubscriberMessages(false).sendNoSubscriberEvent(false).installDefaultEventBus();
 
 	class USBServiceResultReceiver extends ResultReceiver {
 
