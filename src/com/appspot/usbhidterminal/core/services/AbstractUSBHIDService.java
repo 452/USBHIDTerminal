@@ -111,7 +111,6 @@ public abstract class AbstractUSBHIDService extends Service {
 	private class USBThreadDataReceiver extends Thread {
 
 		private volatile boolean isStopped;
-		private byte[] buffer = new byte[packetSize];
 
 		public USBThreadDataReceiver() {
 		}
@@ -120,8 +119,8 @@ public abstract class AbstractUSBHIDService extends Service {
 		public void run() {
 			try {
 				if (connection != null && endPointRead != null) {
-					buffer = new byte[packetSize];
 					while (!isStopped) {
+						final byte[] buffer = new byte[packetSize];
 						final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 100);
 						if (status > 0) {
 							uiHandler.post(new Runnable() {
