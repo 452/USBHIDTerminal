@@ -29,6 +29,7 @@ import com.appspot.usbhidterminal.core.services.USBHIDService;
 import com.appspot.usbhidterminal.core.services.WebServerService;
 
 import de.greenrobot.event.EventBus;
+import de.greenrobot.event.EventBusException;
 
 public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
@@ -49,7 +50,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private String receiveDataFormat;
 	private String delimiter;
 
-	protected EventBus eventBus = EventBus.builder().logNoSubscriberMessages(false).sendNoSubscriberEvent(false).installDefaultEventBus();
+	protected EventBus eventBus;
 
 	class USBServiceResultReceiver extends ResultReceiver {
 
@@ -96,6 +97,11 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		try {
+			eventBus = EventBus.builder().logNoSubscriberMessages(false).sendNoSubscriberEvent(false).installDefaultEventBus();
+		} catch (EventBusException e) {
+			eventBus = EventBus.getDefault();
+		}
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
 		initUI();
@@ -258,11 +264,15 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 				stopService(new Intent(this, WebServerService.class));
 				break;
 			case Consts.USB_HID_TERMINAL_CLOSE_ACTION:
+				stopService(new Intent(this, SocketService.class));
+				stopService(new Intent(this, WebServerService.class));
 				stopService(new Intent(this, USBHIDService.class));
 				((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.USB_HID_TERMINAL_NOTIFICATION);
+				finish();
 				break;
 			case Consts.SOCKET_SERVER_CLOSE_ACTION:
-				stopService(new Intent(this, USBHIDService.class));
+				stopService(new Intent(this, SocketService.class));
+				sharedPreferences.edit().putBoolean("enable_socket_server", false).apply();
 				break;
 		}
 	}
