@@ -52,7 +52,6 @@ public class SocketService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.v(">>>>>>>>>>>>>>>", "Exit serv");
         if (socketThreadDataReceiver != null) {
             socketThreadDataReceiver.stopThis();
         }
@@ -116,10 +115,12 @@ public class SocketService extends Service {
 
     private void waitingForConnection() {
         try {
-            socket = serverSocket.accept();
-            out = new DataOutputStream(socket.getOutputStream());
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out.writeChars("Hello from USBHIDTerminal\n");
+            if (!serverSocket.isClosed()) {
+                socket = serverSocket.accept();
+                out = new DataOutputStream(socket.getOutputStream());
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out.writeChars("Hello from USBHIDTerminal\n");
+            }
         } catch (IOException e) {
             Log.w(TAG, e);
         }
