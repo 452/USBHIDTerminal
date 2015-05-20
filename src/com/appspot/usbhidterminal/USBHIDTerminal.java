@@ -195,7 +195,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	private void setSelectedMenuItemsFromSettings(Menu menu) {
 		receiveDataFormat = sharedPreferences.getString(Consts.RECEIVE_DATA_FORMAT, Consts.TEXT);
-		if (receiveDataFormat != null && receiveDataFormat.equals(Consts.BINARY)) {
+		if (receiveDataFormat.equals(Consts.BINARY)) {
 			menu.findItem(R.id.menuSettingsReceiveBinary).setChecked(true);
 		} else if (receiveDataFormat.equals(Consts.INTEGER)) {
 			menu.findItem(R.id.menuSettingsReceiveInteger).setChecked(true);
