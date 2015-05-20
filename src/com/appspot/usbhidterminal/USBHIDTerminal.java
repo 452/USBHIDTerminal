@@ -281,12 +281,14 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	private void setDelimiter() {
 		settingsDelimiter = sharedPreferences.getString(Consts.DELIMITER, Consts.DELIMITER_NEW_LINE);
-		if (settingsDelimiter.equals(Consts.DELIMITER_NONE)) {
-			delimiter = "";
-		} else if (settingsDelimiter.equals(Consts.DELIMITER_NEW_LINE)) {
-			delimiter = Consts.NEW_LINE;
-		} else if (settingsDelimiter.equals(Consts.DELIMITER_SPACE)) {
-			delimiter = Consts.SPACE;
+		if (settingsDelimiter != null) {
+			if (settingsDelimiter.equals(Consts.DELIMITER_NONE)) {
+				delimiter = "";
+			} else if (settingsDelimiter.equals(Consts.DELIMITER_NEW_LINE)) {
+				delimiter = Consts.NEW_LINE;
+			} else if (settingsDelimiter.equals(Consts.DELIMITER_SPACE)) {
+				delimiter = Consts.SPACE;
+			}
 		}
 		usbService.setAction(Consts.RECEIVE_DATA_FORMAT);
 		usbService.putExtra(Consts.RECEIVE_DATA_FORMAT, receiveDataFormat);
