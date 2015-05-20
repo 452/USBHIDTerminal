@@ -188,7 +188,9 @@ public abstract class AbstractUSBHIDService extends Service {
 			if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
 				if (device != null) {
 					device = null;
-					usbThreadDataReceiver.stopThis();
+					if (usbThreadDataReceiver != null) {
+						usbThreadDataReceiver.stopThis();
+					}
 					sendResultToUI(Consts.ACTION_USB_DEVICE_DETACHED, null);
 					onDeviceDisconnected(device);
 				}
