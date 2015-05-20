@@ -66,6 +66,7 @@ public class SocketService extends Service {
             if (serverSocket != null) {
                 serverSocket.close();
             }
+            ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.SOCKET_SERVER_NOTIFICATION);
         } catch (IOException e) {
             Log.e(TAG, "Close streams", e);
         }

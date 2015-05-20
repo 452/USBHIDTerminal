@@ -70,6 +70,7 @@ public class WebServerService extends Service {
     public void onDestroy() {
         if (webServer != null) {
             webServer.stop();
+            ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.WEB_SERVER_NOTIFICATION);
         }
     }
 

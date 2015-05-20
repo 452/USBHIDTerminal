@@ -256,7 +256,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		switch (action) {
 			case Consts.WEB_SERVER_CLOSE_ACTION:
 				stopService(new Intent(this, WebServerService.class));
-				((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.WEB_SERVER_NOTIFICATION);
 				break;
 			case Consts.USB_HID_TERMINAL_CLOSE_ACTION:
 				stopService(new Intent(this, USBHIDService.class));
@@ -264,7 +263,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 				break;
 			case Consts.SOCKET_SERVER_CLOSE_ACTION:
 				stopService(new Intent(this, USBHIDService.class));
-				((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(Consts.SOCKET_SERVER_NOTIFICATION);
 				break;
 		}
 	}
