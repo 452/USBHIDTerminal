@@ -20,9 +20,9 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 import de.greenrobot.event.EventBus;
 
@@ -52,25 +52,22 @@ public class SocketService extends Service {
 
     @Override
     public void onDestroy() {
-        if (socketThreadDataReceiver != null) {
-            socketThreadDataReceiver.stopThis();
-        }
-        if (socket != null) {
-            try {
+        try {
+            if (socketThreadDataReceiver != null) {
+                socketThreadDataReceiver.stopThis();
+            }
+            if (socket != null) {
                 socket.shutdownInput();
                 socket.shutdownOutput();
                 in.close();
                 out.close();
                 socket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Close streams", e);
             }
-        }
-        if (serverSocket != null) {
-            try {
+            if (serverSocket != null) {
                 serverSocket.close();
-            } catch (IOException e) {
             }
+        } catch (IOException e) {
+            Log.e(TAG, "Close streams", e);
         }
         eventBus.unregister(this);
         super.onDestroy();
@@ -103,24 +100,21 @@ public class SocketService extends Service {
         try {
             serverSocket = new ServerSocket(socketPort);
             serverSocket.setReuseAddress(true);
-            Log.v("Socket", "Waiting connection! Port: " + socketPort);
             waitingForConnection();
             socketThreadDataReceiver = new SocketThreadDataReceiver();
             socketThreadDataReceiver.start();
-        } catch (BindException e) {
         } catch (IOException e) {
-            //Log.w(TAG, e);
+            Log.w(TAG, e);
         }
     }
 
     private void waitingForConnection() {
         try {
-            if (!serverSocket.isClosed()) {
-                socket = serverSocket.accept();
-                out = new DataOutputStream(socket.getOutputStream());
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out.writeChars("Hello from USBHIDTerminal\n");
-            }
+            socket = serverSocket.accept();
+            out = new DataOutputStream(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out.writeChars("Hello from USBHIDTerminal\n");
+        } catch (SocketException e) {
         } catch (IOException e) {
             Log.w(TAG, e);
         }
@@ -165,21 +159,10 @@ public class SocketService extends Service {
         }
     }
 
-    class SocketServerTask extends AsyncTask<String, Void, String> {
-
-        private Exception exception;
-
-        protected String doInBackground(String... urls) {
-            try {
-                setup();
-                return "";
-            } catch (Exception e) {
-                this.exception = e;
-                return null;
-            }
-        }
-
-        protected void onPostExecute(String feed) {
+    class SocketServerTask extends AsyncTask<String, Void, Void> {
+        protected Void doInBackground(String... urls) {
+            setup();
+            return null;
         }
     }
 
