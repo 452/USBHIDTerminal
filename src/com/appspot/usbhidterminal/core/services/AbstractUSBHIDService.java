@@ -1,6 +1,5 @@
 package com.appspot.usbhidterminal.core.services;
 
-import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,15 +15,14 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.hardware.usb.UsbRequest;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
+import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
@@ -35,7 +33,6 @@ public abstract class AbstractUSBHIDService extends Service {
 	private static final String TAG = AbstractUSBHIDService.class.getCanonicalName();
 
 	private USBThreadDataReceiver usbThreadDataReceiver;
-	private ResultReceiver resultReceiver;
 
 	private final Handler uiHandler = new Handler();
 
@@ -76,9 +73,6 @@ public abstract class AbstractUSBHIDService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		String action = intent.getAction();
-		if (resultReceiver == null) {
-			resultReceiver = intent.getParcelableExtra("receiver");
-		}
 		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
 			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
 		} else if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
@@ -193,7 +187,7 @@ public abstract class AbstractUSBHIDService extends Service {
 					if (usbThreadDataReceiver != null) {
 						usbThreadDataReceiver.stopThis();
 					}
-					sendResultToUI(Consts.ACTION_USB_DEVICE_DETACHED, null);
+					eventBus.post(new DeviceDetachedEvent());
 					onDeviceDisconnected(device);
 				}
 			}
@@ -227,14 +221,10 @@ public abstract class AbstractUSBHIDService extends Service {
 				}
 				usbThreadDataReceiver = new USBThreadDataReceiver();
 				usbThreadDataReceiver.start();
-				sendResultToUI(Consts.ACTION_USB_DEVICE_ATTACHED, null);
+				eventBus.post(new DeviceAttachedEvent());
 			}
 		}
 	};
-
-	public void sendResultToUI(int resultCode, Bundle resultData) {
-		resultReceiver.send(resultCode, resultData);
-	}
 
 	public void onCommand(Intent intent, String action, int flags, int startId) {
 	}

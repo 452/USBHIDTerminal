@@ -8,10 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +18,8 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 
 import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
+import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
@@ -38,7 +37,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private SharedPreferences sharedPreferences;
 
 	private Intent usbService;
-	private USBServiceResultReceiver usbServiceResultReceiver;
 
 	private EditText edtlogText;
 	private EditText edtxtHidInput;
@@ -54,23 +52,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	protected EventBus eventBus;
 
-	class USBServiceResultReceiver extends ResultReceiver {
-
-		public USBServiceResultReceiver(Handler handler) {
-			super(handler);
-		}
-
-		@Override
-		protected void onReceiveResult(int resultCode, Bundle resultData) {
-			if (resultCode == Consts.ACTION_USB_DEVICE_ATTACHED) {
-				btnSend.setEnabled(true);
-			} else if (resultCode == Consts.ACTION_USB_DEVICE_DETACHED) {
-				btnSend.setEnabled(false);
-			}
-		}
-
-	}
-
 	private SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -83,8 +64,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	private void prepareServices() {
 		usbService = new Intent(this, USBHIDService.class);
-		usbServiceResultReceiver = new USBServiceResultReceiver(null);
-		usbService.putExtra("receiver", usbServiceResultReceiver);
 		startService(usbService);
 		/*
 		Intent webServerService = new Intent(this, WebServerService.class);
@@ -173,6 +152,14 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	public void onEvent(ShowDevicesListEvent event) {
 		showListOfDevices(event.getCharSequenceArray());
+	}
+
+	public void onEvent(DeviceAttachedEvent event) {
+		btnSend.setEnabled(true);
+	}
+
+	public void onEvent(DeviceDetachedEvent event) {
+		btnSend.setEnabled(false);
 	}
 
 	@Override
