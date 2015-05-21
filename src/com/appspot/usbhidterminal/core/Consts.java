@@ -19,7 +19,6 @@ public abstract class Consts {
 
 	public static final String ACTION_USB_SHOW_DEVICES_LIST = "ACTION_USB_SHOW_DEVICES_LIST";
 	public static final String ACTION_USB_DATA_TYPE = "ACTION_USB_DATA_TYPE";
-	public static final String ACTION_USB_SELECT_DEVICE = "ACTION_USB_SELECT_DEVICE";
 	public static final int RESULT_SETTINGS = 7;
 	public static final String USB_HID_TERMINAL_CLOSE_ACTION = "USB_HID_TERMINAL_EXIT";
 	public static final String WEB_SERVER_CLOSE_ACTION = "WEB_SERVER_EXIT";

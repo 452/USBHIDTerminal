@@ -22,6 +22,7 @@ import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
 import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
+import com.appspot.usbhidterminal.core.events.SelectDeviceEvent;
 import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
@@ -135,7 +136,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		builder.setItems(devicesName, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				sendToUSBService(Consts.ACTION_USB_SELECT_DEVICE, which);
+				eventBus.post(new SelectDeviceEvent(which));
 			}
 		});
 		builder.setCancelable(true);

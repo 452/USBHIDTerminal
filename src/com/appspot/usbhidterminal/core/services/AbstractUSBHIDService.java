@@ -24,6 +24,7 @@ import com.appspot.usbhidterminal.core.USBUtils;
 import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
 import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
+import com.appspot.usbhidterminal.core.events.SelectDeviceEvent;
 import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 import de.greenrobot.event.EventBus;
@@ -64,7 +65,6 @@ public abstract class AbstractUSBHIDService extends Service {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		filter.addAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
-		filter.addAction(Consts.ACTION_USB_SELECT_DEVICE);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
 		eventBus.register(this);
@@ -75,9 +75,6 @@ public abstract class AbstractUSBHIDService extends Service {
 		String action = intent.getAction();
 		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
 			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
-		} else if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
-			device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
-			mUsbManager.requestPermission(device, mPermissionIntent);
 		}
 		onCommand(intent, action, flags, startId);
 		return START_REDELIVER_INTENT;
@@ -130,6 +127,11 @@ public abstract class AbstractUSBHIDService extends Service {
 
 	public void onEventMainThread(USBDataSendEvent event){
 		sendData(event.getData(), sendedDataType);
+	}
+
+	public void onEvent(SelectDeviceEvent event) {
+		device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[event.getDevice()];
+		mUsbManager.requestPermission(device, mPermissionIntent);
 	}
 
     public void onEventMainThread(PrepareDevicesListEvent event) {
