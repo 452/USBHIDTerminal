@@ -1,8 +1,6 @@
 package com.appspot.usbhidterminal.core;
 
 public abstract class Consts {
-	public static final String CONNECTION = "CONNECTION";
-	public static final String END_POINT_READ = "END_POINT_READ";
 	public static final String BINARY = "binary";
 	public static final String INTEGER = "integer";
 	public static final String HEXADECIMAL = "hexadecimal";
@@ -19,12 +17,9 @@ public abstract class Consts {
 	public static final String NEW_LINE = "\n";
 	public static final String SPACE = " ";
 
-	public static final int ACTION_USB_DEVICE_ATTACHED = 1;
-	public static final int ACTION_USB_DEVICE_DETACHED = 2;
 	public static final String ACTION_USB_SHOW_DEVICES_LIST = "ACTION_USB_SHOW_DEVICES_LIST";
 	public static final String ACTION_USB_DATA_TYPE = "ACTION_USB_DATA_TYPE";
 	public static final String ACTION_USB_SELECT_DEVICE = "ACTION_USB_SELECT_DEVICE";
-	public static final int ACTION_USB_SHOW_DEVICES_LIST_RESULT = 6;
 	public static final int RESULT_SETTINGS = 7;
 	public static final String USB_HID_TERMINAL_CLOSE_ACTION = "USB_HID_TERMINAL_EXIT";
 	public static final String WEB_SERVER_CLOSE_ACTION = "WEB_SERVER_EXIT";
