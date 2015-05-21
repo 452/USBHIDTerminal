@@ -22,6 +22,8 @@ import android.widget.RadioButton;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
+import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
+import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 import com.appspot.usbhidterminal.core.services.SocketService;
@@ -64,8 +66,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 				btnSend.setEnabled(true);
 			} else if (resultCode == Consts.ACTION_USB_DEVICE_DETACHED) {
 				btnSend.setEnabled(false);
-			} else if (resultCode == Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT) {
-				showListOfDevices(resultData.getCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST));
 			}
 		}
 
@@ -140,7 +140,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		} else if (v == btnClear) {
 			edtlogText.setText("");
 		} else if (v == btnSelectHIDDevice) {
-			sendToUSBService(Consts.ACTION_USB_SHOW_DEVICES_LIST);
+			eventBus.post(new PrepareDevicesListEvent());
 		}
 	}
 
@@ -169,6 +169,10 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	public void onEvent(LogMessageEvent event) {
 		mLog(event.getData(), true);
+	}
+
+	public void onEvent(ShowDevicesListEvent event) {
+		showListOfDevices(event.getCharSequenceArray());
 	}
 
 	@Override

@@ -25,6 +25,8 @@ import android.util.Log;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
+import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 import de.greenrobot.event.EventBus;
 
@@ -79,17 +81,6 @@ public abstract class AbstractUSBHIDService extends Service {
 		}
 		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
 			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
-		} else if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
-			mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-			List<CharSequence> list = new LinkedList<CharSequence>();
-			for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
-				list.add(onBuildingDevicesList(usbDevice));
-			}
-			final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
-			list.toArray(devicesName);
-			Bundle bundle = new Bundle();
-			bundle.putCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST, devicesName);
-			sendResultToUI(Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT, bundle);
 		} else if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
 			device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
 			mUsbManager.requestPermission(device, mPermissionIntent);
@@ -146,6 +137,17 @@ public abstract class AbstractUSBHIDService extends Service {
 	public void onEventMainThread(USBDataSendEvent event){
 		sendData(event.getData(), sendedDataType);
 	}
+
+    public void onEventMainThread(PrepareDevicesListEvent event) {
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        List<CharSequence> list = new LinkedList<CharSequence>();
+        for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+            list.add(onBuildingDevicesList(usbDevice));
+        }
+        final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
+        list.toArray(devicesName);
+        eventBus.post(new ShowDevicesListEvent(devicesName));
+    }
 
 	private void sendData(String data, boolean sendAsString) {
 		if (device != null && endPointWrite != null && mUsbManager.hasPermission(device) && !data.isEmpty()) {
