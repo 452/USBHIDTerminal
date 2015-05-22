@@ -48,7 +48,6 @@ public class SocketService extends Service {
         super.onCreate();
         setupNotifications();
         eventBus.register(this);
-        new SocketServerTask().execute();
     }
 
     @Override
@@ -87,12 +86,15 @@ public class SocketService extends Service {
         }
     }
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
         if (action.equals("start")) {
             socketPort = intent.getIntExtra("SOCKET_PORT", DEFAULT_SOCKET_PORT);
+            if (socketThreadDataReceiver == null) {
+                socketThreadDataReceiver = new SocketThreadDataReceiver();
+                socketThreadDataReceiver.start();
+            }
         }
         return START_REDELIVER_INTENT;
     }
@@ -102,8 +104,6 @@ public class SocketService extends Service {
             serverSocket = new ServerSocket(socketPort);
             serverSocket.setReuseAddress(true);
             waitingForConnection();
-            socketThreadDataReceiver = new SocketThreadDataReceiver();
-            socketThreadDataReceiver.start();
         } catch (IOException e) {
             Log.w(TAG, e);
         }
@@ -140,6 +140,7 @@ public class SocketService extends Service {
         @Override
         public void run() {
             try {
+                setup();
                 if (socket != null && socket.isConnected()) {
                     while (!isStopped) {
                         String data = in.readLine();
@@ -157,13 +158,6 @@ public class SocketService extends Service {
 
         public void stopThis() {
             isStopped = true;
-        }
-    }
-
-    class SocketServerTask extends AsyncTask<String, Void, Void> {
-        protected Void doInBackground(String... urls) {
-            setup();
-            return null;
         }
     }
 
