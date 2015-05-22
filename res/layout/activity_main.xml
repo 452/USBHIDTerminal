@@ -5,7 +5,7 @@
     android:layout_gravity="top|left"
     android:orientation="vertical"
     android:windowSoftInputMode="stateHidden"
-    tools:context=".MainActivity" >
+    tools:context=".USBHIDTerminal" >
 
     <LinearLayout
         android:layout_width="match_parent"

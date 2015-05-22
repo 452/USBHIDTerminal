@@ -1,4 +1,4 @@
-package com.appspot.usbhidterminal.core;
+package com.appspot.usbhidterminal.core.services;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,16 +15,25 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.ResultReceiver;
 import android.util.Log;
+
+import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
+import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
+import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
+import com.appspot.usbhidterminal.core.events.SelectDeviceEvent;
+import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
+import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
+import de.greenrobot.event.EventBus;
 
 public abstract class AbstractUSBHIDService extends Service {
 
+	private static final String TAG = AbstractUSBHIDService.class.getCanonicalName();
+
 	private USBThreadDataReceiver usbThreadDataReceiver;
-	private ResultReceiver resultReceiver;
 
 	private final Handler uiHandler = new Handler();
 
@@ -41,6 +50,8 @@ public abstract class AbstractUSBHIDService extends Service {
 	private int packetSize;
 	private boolean sendedDataType;
 
+	protected EventBus eventBus = EventBus.getDefault();
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
@@ -54,36 +65,16 @@ public abstract class AbstractUSBHIDService extends Service {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		filter.addAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
-		filter.addAction(Consts.ACTION_USB_SELECT_DEVICE);
-		filter.addAction(Consts.ACTION_USB_SEND_DATA);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
 		registerReceiver(mUsbReceiver, filter);
+		eventBus.register(this);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		String action = intent.getAction();
-		if (resultReceiver == null) {
-			resultReceiver = intent.getParcelableExtra("receiver");
-		}
 		if (Consts.ACTION_USB_DATA_TYPE.equals(action)) {
 			sendedDataType = intent.getBooleanExtra(Consts.ACTION_USB_DATA_TYPE, false);
-		} else if (Consts.ACTION_USB_SEND_DATA.equals(action)) {
-			sendData(intent.getStringExtra(Consts.ACTION_USB_SEND_DATA), sendedDataType);
-		} else if (Consts.ACTION_USB_SHOW_DEVICES_LIST.equals(action)) {
-			mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-			List<CharSequence> list = new LinkedList<CharSequence>();
-			for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
-				list.add(onBuildingDevicesList(usbDevice));
-			}
-			final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
-			list.toArray(devicesName);
-			Bundle bundle = new Bundle();
-			bundle.putCharSequenceArray(Consts.ACTION_USB_SHOW_DEVICES_LIST, devicesName);
-			sendResultToUI(Consts.ACTION_USB_SHOW_DEVICES_LIST_RESULT, bundle);
-		} else if (Consts.ACTION_USB_SELECT_DEVICE.equals(action)) {
-			device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[intent.getIntExtra(Consts.ACTION_USB_SELECT_DEVICE, 0)];
-			mUsbManager.requestPermission(device, mPermissionIntent);
 		}
 		onCommand(intent, action, flags, startId);
 		return START_REDELIVER_INTENT;
@@ -91,6 +82,7 @@ public abstract class AbstractUSBHIDService extends Service {
 
 	@Override
 	public void onDestroy() {
+		eventBus.unregister(this);
 		super.onDestroy();
 		if (usbThreadDataReceiver != null) {
 			usbThreadDataReceiver.stopThis();
@@ -107,19 +99,24 @@ public abstract class AbstractUSBHIDService extends Service {
 
 		@Override
 		public void run() {
-			if (connection != null && endPointRead != null) {
-				final byte[] buffer = new byte[packetSize];
-				while (!isStopped) {
-					final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 300);
-					if (status >= 0) {
-						uiHandler.post(new Runnable() {
-							@Override
-							public void run() {
-								onUSBDataReceive(buffer);
-							}
-						});
+			try {
+				if (connection != null && endPointRead != null) {
+					while (!isStopped) {
+						final byte[] buffer = new byte[packetSize];
+						final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 100);
+						if (status > 0) {
+							uiHandler.post(new Runnable() {
+								@Override
+								public void run() {
+									onUSBDataReceive(buffer);
+								}
+							});
+
+						}
 					}
 				}
+			} catch (Exception e) {
+				Log.e(TAG, "Error in receive thread", e);
 			}
 		}
 
@@ -127,6 +124,26 @@ public abstract class AbstractUSBHIDService extends Service {
 			isStopped = true;
 		}
 	}
+
+	public void onEventMainThread(USBDataSendEvent event){
+		sendData(event.getData(), sendedDataType);
+	}
+
+	public void onEvent(SelectDeviceEvent event) {
+		device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[event.getDevice()];
+		mUsbManager.requestPermission(device, mPermissionIntent);
+	}
+
+    public void onEventMainThread(PrepareDevicesListEvent event) {
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        List<CharSequence> list = new LinkedList<CharSequence>();
+        for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
+            list.add(onBuildingDevicesList(usbDevice));
+        }
+        final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
+        list.toArray(devicesName);
+        eventBus.post(new ShowDevicesListEvent(devicesName));
+    }
 
 	private void sendData(String data, boolean sendAsString) {
 		if (device != null && endPointWrite != null && mUsbManager.hasPermission(device) && !data.isEmpty()) {
@@ -169,8 +186,10 @@ public abstract class AbstractUSBHIDService extends Service {
 			if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
 				if (device != null) {
 					device = null;
-					usbThreadDataReceiver.stopThis();
-					sendResultToUI(Consts.ACTION_USB_DEVICE_DETACHED, null);
+					if (usbThreadDataReceiver != null) {
+						usbThreadDataReceiver.stopThis();
+					}
+					eventBus.post(new DeviceDetachedEvent());
 					onDeviceDisconnected(device);
 				}
 			}
@@ -204,14 +223,10 @@ public abstract class AbstractUSBHIDService extends Service {
 				}
 				usbThreadDataReceiver = new USBThreadDataReceiver();
 				usbThreadDataReceiver.start();
-				sendResultToUI(Consts.ACTION_USB_DEVICE_ATTACHED, null);
+				eventBus.post(new DeviceAttachedEvent());
 			}
 		}
 	};
-
-	public void sendResultToUI(int resultCode, Bundle resultData) {
-		resultReceiver.send(resultCode, resultData);
-	}
 
 	public void onCommand(Intent intent, String action, int flags, int startId) {
 	}
