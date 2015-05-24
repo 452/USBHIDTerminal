@@ -3,6 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <title>USB HID Terminal</title>
+    <script src="lib/codemirror-compressed.js"></script>
+    <link rel="stylesheet" href="css/codemirror.css">
+    <link rel="stylesheet" href="css/show-hint.css">
+    <link rel="stylesheet" href="css/fullscreen.css">
     <style>
         body {
         width: 940px;
@@ -15,22 +19,55 @@
         header,footer{
         text-align:center;
         }
+        #javaScriptCode1{
+            border : solid 2px #12FF27;
+            padding : 4px;
+            height : 200px;
+            width: 940px;
+            overflow : auto;
+        }
         #log{
             border : solid 2px #ff0000;
             padding : 4px;
             height : 400px;
             overflow : auto;
         }
+        .CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}
     </style>
     <script language="javascript" type="text/javascript">
       var wsUri = "ws://"+window.location.host+"/websocket";
+      var utf8 = {};
       var output;
+      var btnConnect;
       var websocket;
       var count = 0;
+      var serverPingHandle = null;
+      var editor;
       function init() {
+        btnConnect = document.getElementById("connect");
         output = document.getElementById("log");
+        writeToScreen('USBHIDTerminal initialized');
         connectToWebSocket();
-        keepAliveBroadcaster();
+        editor = CodeMirror.fromTextArea(document.getElementById("javaScriptCode"), {
+          lineNumbers: true,
+          matchBrackets: true,
+          autoCloseBrackets: true,
+          showCursorWhenSelecting: true,
+          continueComments: "Enter",
+          styleActiveLine: true,
+          lineWrapping: true,
+          extraKeys: {
+            "Ctrl-Space": "autocomplete",
+            "Ctrl-Q": "toggleComment",
+            "F11": function(cm) {
+             cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+            },
+            "Esc": function(cm) {
+              if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+            }
+          },
+          mode: {name: "javascript", globalVars: true}
+        });
       }
       function connectToWebSocket() {
           websocket = new WebSocket(wsUri);
@@ -47,15 +84,19 @@
             onError(evt)
           };
       }
-      function onOpen(evt) { writeToScreen("CONNECTED");
-        doSend("WebSocket rocks");
+      function onOpen(evt) {
+        btnConnect.disabled = true;
+        writeToScreen("CONNECTED");
+        keepAliveBroadcaster();
+        doSend("test");
       }
       function onClose(evt) {
         writeToScreen("DISCONNECTED");
+        btnConnect.disabled = false;
+        clearInterval(serverPingHandle);
       }
       function onMessage(evt) {
         writeToScreen('Received: ' + evt.data);
-        //websocket.close();
       }
       function onError(evt) {
         writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
@@ -65,15 +106,61 @@
         websocket.send(message);
       }
       function keepAliveBroadcaster() {
-        setInterval(function() {
-          if (websocket != null) {
-                websocket.send("staying alive!");
+        serverPingHandle = setInterval(function() {
+          if (websocket !== null) {
+                websocket.send("pingserver");
           }
           pingOut.innerHTML = ++count;
         }, 2000);
       }
+      function handleKeyPress(e,form){
+        var key=e.keyCode || e.which;
+        if (key==13){
+            doSend(edtData.value);
+        }
+      }
       function writeToScreen(message) {
         var pre = document.createElement("p"); pre.style.wordWrap = "break-word"; pre.innerHTML = message; output.appendChild(pre);
+      }
+      function runCode() {
+        var scriptText = editor.getValue();
+        var oldScript = document.getElementById('scriptContainer');
+        var newScript;
+        if (oldScript) {
+          oldScript.parentNode.removeChild(oldScript);
+        }
+        newScript = document.createElement('script');
+        newScript.id = 'scriptContainer';
+        newScript.text = scriptText;
+        document.body.appendChild(newScript);
+      }
+      utf8.toByteArray = function(str) {
+            var byteArray = [];
+            for (var i = 0; i < str.length; i++)
+                if (str.charCodeAt(i) <= 0x7F)
+                    byteArray.push(str.charCodeAt(i));
+                else {
+                    var h = encodeURIComponent(str.charAt(i)).substr(1).split('%');
+                    for (var j = 0; j < h.length; j++)
+                        byteArray.push(parseInt(h[j], 16));
+                }
+            return byteArray;
+      };
+      utf8.parse = function(byteArray) {
+            var str = '';
+            for (var i = 0; i < byteArray.length; i++)
+                str +=  byteArray[i] <= 0x7F?
+                        byteArray[i] === 0x25 ? "%25" : // %
+                        String.fromCharCode(byteArray[i]) :
+                        "%" + byteArray[i].toString(16).toUpperCase();
+            return decodeURIComponent(str);
+      };
+      String.prototype.normalizeData = function() {
+        var str = '';
+        for (var i = 0; i < this.length && this.charCodeAt(i) !=0; i++) {
+            str += String.fromCharCode(this.charCodeAt(i));
+        }
+        return str;
       }
       window.addEventListener("load", init, false);
     </script>
@@ -82,16 +169,38 @@
 <header>
     <h2>USB HID Terminal 1.1.0</h2>
 </header>
+Your custom JavaScript code (F11, CTRL+SPACE, CTRL+D, CTRL+Q):
+<br/>
+<textarea id="javaScriptCode" name="javaScriptCode">
+//connectToWebSocket();
+//doSend('test');
+//function onMessage(evt) {
+//  writeToScreen('Received: ' + evt.data);
+//  var data = evt.data.normalizeData();
+//  if(data === '|||||||||') {
+//    alert('your data is :' + data);
+//  }
+//}
+//var str = "Україна - Ukraine!";
+//var ba = utf8.toByteArray(str);
+//alert(ba);// 208, ...
+//alert(utf8.parse(ba)); // Україна - Ukraine!
+alert('Hello');
+</textarea>
+<br/>
+<button id="btnRunCode" onclick="runCode()">Run Code</button>
+<br/>
 ping: <output id="pingOut"></output>
 <br/>
-<input id="edtData" type="text" value="led3"/>
+<input id="edtData" type="text" value="led3" onkeypress="handleKeyPress(event)"/>
 <button id="send" onclick="doSend(edtData.value)">Send</button>
 <button id="connect" onclick="connectToWebSocket()">Connect</button>
 <button id="clear" onclick="log.innerHTML='';">Clear</button>
 <div id="log"/></div>
+<div id="scriptContainer"/></div>
 <br/>
 <footer>
-    <p>Web Server - Beta version</p>
+    <p>Web UI - Beta version</p>
     <a href="https://github.com/452/USBHIDTerminal" target="_blank">GitHub</a>
 </footer>
 </body>
