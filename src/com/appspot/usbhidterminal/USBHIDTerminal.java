@@ -59,6 +59,9 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 			if ("enable_socket_server".equals(key) || "socket_server_port".equals(key)) {
 				socketServiceIsStart(false);
 				socketServiceIsStart(sharedPreferences.getBoolean("enable_socket_server", false));
+			} else if ("enable_web_server".equals(key) || "web_server_port".equals(key)) {
+				webServerServiceIsStart(false);
+				webServerServiceIsStart(sharedPreferences.getBoolean("enable_web_server", false));
 			}
 		}
 	};
@@ -66,10 +69,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private void prepareServices() {
 		usbService = new Intent(this, USBHIDService.class);
 		startService(usbService);
-		/*
-		Intent webServerService = new Intent(this, WebServerService.class);
-		webServerService.setAction("start");
-		startService(webServerService);*/
+		webServerServiceIsStart(sharedPreferences.getBoolean("enable_web_server", false));
 		socketServiceIsStart(sharedPreferences.getBoolean("enable_socket_server", false));
 	}
 
@@ -310,6 +310,17 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		edtlogText.append(log);
 		if(edtlogText.getLineCount()>200) {
 			edtlogText.setText("cleared");
+		}
+	}
+
+	private void webServerServiceIsStart(boolean isStart) {
+		if (isStart) {
+			Intent webServerService = new Intent(this, WebServerService.class);
+			webServerService.setAction("start");
+			webServerService.putExtra("WEB_SERVER_PORT", Integer.parseInt(sharedPreferences.getString("web_server_port", "7799")));
+			startService(webServerService);
+		} else {
+			stopService(new Intent(this, WebServerService.class));
 		}
 	}
 
