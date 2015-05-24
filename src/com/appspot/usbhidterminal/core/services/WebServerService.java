@@ -1,6 +1,5 @@
 package com.appspot.usbhidterminal.core.services;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -23,7 +22,7 @@ import de.greenrobot.event.EventBus;
 public class WebServerService extends Service {
 
     private static final String TAG = WebServerService.class.getCanonicalName();
-    public static final String CLOSE_ACTION = "close";
+    private static final int DEFAULT_WEB_SERVER_PORT = 7799;
     private final IBinder webServerServiceBinder = new LocalBinder();
     private WebServer webServer;
 
@@ -46,16 +45,17 @@ public class WebServerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
         if (action.equals("start")) {
-           /* try {
-                if (webServer == null) {
-                    webServer = new WebServer(this.getAssets());
-                }
-                webServer.start();
-                EventBus.getDefault().post(new LogMessageEvent("Web service launched"));
+           try {
+               int serverPort = intent.getIntExtra("WEB_SERVER_PORT", DEFAULT_WEB_SERVER_PORT);
+               if (webServer == null) {
+                   webServer = new WebServer(this.getAssets(), serverPort);
+                   webServer.start();
+               }
+               EventBus.getDefault().post(new LogMessageEvent("Web service launched, port: " + serverPort));
             } catch (IOException e) {
-                Log.e(tag, "Starting Web Server error", e);
+                Log.e(TAG, "Starting Web Server error", e);
                 EventBus.getDefault().post(new LogMessageEvent("Web service problem: " + e.getMessage()));
-            }*/
+            }
         }
         return START_REDELIVER_INTENT;
     }

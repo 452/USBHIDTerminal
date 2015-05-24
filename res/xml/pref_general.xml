@@ -3,7 +3,6 @@
     <CheckBoxPreference
         android:key="enable_web_server"
         android:title="@string/pref_title_web_server"
-        android:enabled="false"
         android:defaultValue="false" />
     <CheckBoxPreference
         android:key="enable_socket_server"
@@ -20,7 +19,6 @@
         android:numeric="integer"
         android:maxLength="4"
         android:singleLine="true"
-        android:enabled="false"
         android:maxLines="1" />
     <EditTextPreference
         android:key="socket_server_port"

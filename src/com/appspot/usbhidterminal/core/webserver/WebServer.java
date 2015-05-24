@@ -22,8 +22,8 @@ public class WebServer extends NanoHTTPD {
     private AssetManager assetManager;
     private WebSocketResponseHandler responseHandler;
 
-    public WebServer(AssetManager assetManager) {
-        super(5000);
+    public WebServer(AssetManager assetManager, int port) {
+        super(port);
         this.assetManager = assetManager;
         responseHandler = new WebSocketResponseHandler(webSocketFactory);
     }
@@ -37,16 +37,16 @@ public class WebServer extends NanoHTTPD {
         } else {
             switch (uri) {
                 case "/":
-                    uri = "index.html";
+                    uri = "/index.html";
                     break;
-                default:
-                    response.setData(openPage(uri));
             }
+            response.setData(openPage(uri));
         }
         return response;
     }
 
     public void stop(){
+        super.stop();
     }
 
     private InputStream openPage(String file) {
