@@ -4,18 +4,25 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.text.format.Formatter;
 import android.util.Log;
 
 import com.appspot.usbhidterminal.R;
 import com.appspot.usbhidterminal.USBHIDTerminal;
 import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBUtils;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.webserver.WebServer;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.net.InetAddress;
 
 import de.greenrobot.event.EventBus;
 
@@ -50,8 +57,14 @@ public class WebServerService extends Service {
                if (webServer == null) {
                    webServer = new WebServer(this.getAssets(), serverPort);
                    webServer.start();
+                   WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                   if (wm.isWifiEnabled()) {
+                       String ip = USBUtils.getIpAddress(wm.getConnectionInfo().getIpAddress());
+                       EventBus.getDefault().post(new LogMessageEvent("Web service launched\n" +
+                               "http://" + ip + ":" + serverPort +
+                               "\nws://" + ip + ":" + serverPort + "/websocket"));
+                   }
                }
-               EventBus.getDefault().post(new LogMessageEvent("Web service launched, port: " + serverPort));
             } catch (IOException e) {
                 Log.e(TAG, "Starting Web Server error", e);
                 EventBus.getDefault().post(new LogMessageEvent("Web service problem: " + e.getMessage()));

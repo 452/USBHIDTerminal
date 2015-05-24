@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -12,6 +13,8 @@ import android.util.Log;
 import com.appspot.usbhidterminal.R;
 import com.appspot.usbhidterminal.USBHIDTerminal;
 import com.appspot.usbhidterminal.core.Consts;
+import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 
@@ -94,6 +97,12 @@ public class SocketService extends Service {
             if (socketThreadDataReceiver == null) {
                 socketThreadDataReceiver = new SocketThreadDataReceiver();
                 socketThreadDataReceiver.start();
+                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                if (wm.isWifiEnabled()) {
+                    String ip = USBUtils.getIpAddress(wm.getConnectionInfo().getIpAddress());
+                    EventBus.getDefault().post(new LogMessageEvent("Socket service launched\n" +
+                            "telnet " + ip + " " + socketPort));
+                }
             }
         }
         return START_REDELIVER_INTENT;
