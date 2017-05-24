@@ -20,5 +20,5 @@
 	<string name="send">Send</string>
 	<string name="clear">Clear</string>
 	<string name="sendText">Send Text</string>
-	<string name="sendData">Bytes/0xAB/#AB</string>
+	<string name="sendData">Binary (15 #F 017)</string>
 </resources>
