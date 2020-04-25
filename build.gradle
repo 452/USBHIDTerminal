@@ -1,24 +1,36 @@
+apply plugin: 'com.android.application'
+
+ext {
+    versionMajor = 1
+    versionMinor = 1
+}
+
 buildscript {
     repositories {
+        google()
+        mavenCentral()
         jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:+'
+        classpath 'com.android.tools.build:gradle:3.6.3'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
 }
 
-apply plugin: 'com.android.application'
-
 repositories {
+    google()
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:22.1.1'
-    compile 'com.nanohttpd:nanohttpd:2.1.1'
-    compile 'com.nanohttpd:nanohttpd-websocket:2.1.1'
-    compile 'de.greenrobot:eventbus:2.4.0'
+    implementation 'com.android.support:support-v4:27.0.0'
+    implementation 'com.nanohttpd:nanohttpd:2.1.1'
+    implementation 'com.nanohttpd:nanohttpd-websocket:2.1.1'
+    implementation 'de.greenrobot:eventbus:2.4.0'
 }
 
 android {
@@ -27,12 +39,26 @@ android {
         abortOnError false
     }
 
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 27
+    buildToolsVersion "29.0.2"
 
     defaultConfig {
-        minSdkVersion 12
-        targetSdkVersion 22
+        applicationId "com.appspot.usbhidterminal"
+        minSdkVersion 14
+        targetSdkVersion 27
+        versionCode computeVersionCode()
+        versionName computeVersionName()
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     sourceSets {
@@ -68,4 +94,15 @@ task adbConfig(type: Exec) {
 
 task tst(dependsOn: ['adbConfig', 'connectedAndroidTest']) {
 
+}
+
+def computeVersionName() {
+    // Basic <major>.<minor> version name
+    return String.format('%d.%d', versionMajor, versionMinor)
+}
+
+// Will return 120042 for Jenkins build #42
+def computeVersionCode() {
+    // Major + minor + Jenkins build number (where available)
+    return (versionMajor * 10) + (versionMinor * 10) + Integer.valueOf(System.env.BUILD_NUMBER ?: 0)
 }
