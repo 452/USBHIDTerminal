@@ -4,13 +4,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
-import android.text.format.Formatter;
+import androidx.core.app.NotificationCompat;
+
 import android.util.Log;
 
 import com.appspot.usbhidterminal.R;
@@ -21,8 +19,6 @@ import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.webserver.WebServer;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
 
 import de.greenrobot.event.EventBus;
 

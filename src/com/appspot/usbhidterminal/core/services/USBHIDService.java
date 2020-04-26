@@ -4,7 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.appspot.usbhidterminal.R;
 import com.appspot.usbhidterminal.USBHIDTerminal;
