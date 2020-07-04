@@ -21,10 +21,8 @@ import android.util.Log;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
-import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.SelectDeviceEvent;
-import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 import de.greenrobot.event.EventBus;
 
@@ -140,7 +138,7 @@ public abstract class AbstractUSBHIDService extends Service {
         }
         final CharSequence devicesName[] = new CharSequence[mUsbManager.getDeviceList().size()];
         list.toArray(devicesName);
-        eventBus.post(new ShowDevicesListEvent(devicesName));
+		onShowDevicesList(devicesName);
     }
 
 	private void sendData(String data, boolean sendAsString) {
@@ -241,6 +239,9 @@ public abstract class AbstractUSBHIDService extends Service {
 	}
 
 	public void onDeviceAttached(UsbDevice device) {
+	}
+
+	public void onShowDevicesList(CharSequence[] deviceName) {
 	}
 
 	public CharSequence onBuildingDevicesList(UsbDevice usbDevice) {

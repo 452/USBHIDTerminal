@@ -66,6 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/radioGroup"
         android:layout_toRightOf="@id/btnSend"
+        android:hint="0x81 #81"
         android:inputType="text"
         android:textAppearance="?android:attr/textAppearanceSmallInverse" />
 

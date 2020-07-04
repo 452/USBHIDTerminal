@@ -17,6 +17,7 @@ import com.appspot.usbhidterminal.core.USBUtils;
 import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
 import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
+import com.appspot.usbhidterminal.core.events.ShowDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 
 public class USBHIDService extends AbstractUSBHIDService {
@@ -134,6 +135,11 @@ public class USBHIDService extends AbstractUSBHIDService {
 	@Override
 	public void onDeviceAttached(UsbDevice device) {
 		eventBus.post(new DeviceAttachedEvent());
+	}
+
+	@Override
+	public void onShowDevicesList(CharSequence[] deviceName) {
+		eventBus.post(new ShowDevicesListEvent(deviceName));
 	}
 
 	private String showDecHex(int data) {
