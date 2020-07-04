@@ -308,7 +308,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 			edtlogText.append(Consts.NEW_LINE);
 		}
 		edtlogText.append(log);
-		if(edtlogText.getLineCount()>200) {
+		if(edtlogText.getLineCount() > 1000) {
 			edtlogText.setText("cleared");
 		}
 	}
