@@ -21,7 +21,6 @@ import android.util.Log;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
-import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
 import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.SelectDeviceEvent;
@@ -38,7 +37,6 @@ public abstract class AbstractUSBHIDService extends Service {
 	private final Handler uiHandler = new Handler();
 
 	private UsbManager mUsbManager;
-	private UsbInterface intf;
 	private UsbEndpoint endPointRead;
 	private UsbEndpoint endPointWrite;
 	private UsbDeviceConnection connection;
@@ -179,7 +177,7 @@ public abstract class AbstractUSBHIDService extends Service {
 			}
 			if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
 				setDevice(intent);
-				if (device == null) {
+				if (device != null) {
 					onDeviceConnected(device);
 				}
 			}
@@ -189,7 +187,6 @@ public abstract class AbstractUSBHIDService extends Service {
 					if (usbThreadDataReceiver != null) {
 						usbThreadDataReceiver.stopThis();
 					}
-					eventBus.post(new DeviceDetachedEvent());
 					onDeviceDisconnected(device);
 				}
 			}
@@ -200,7 +197,7 @@ public abstract class AbstractUSBHIDService extends Service {
 			if (device != null && intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
 				onDeviceSelected(device);
 				connection = mUsbManager.openDevice(device);
-				intf = device.getInterface(0);
+				UsbInterface intf = device.getInterface(0);
 				if (null == connection) {
 					// mLog("(unable to establish connection)\n");
 				} else {
@@ -223,7 +220,7 @@ public abstract class AbstractUSBHIDService extends Service {
 				}
 				usbThreadDataReceiver = new USBThreadDataReceiver();
 				usbThreadDataReceiver.start();
-				eventBus.post(new DeviceAttachedEvent());
+				onDeviceAttached(device);
 			}
 		}
 	};
@@ -241,6 +238,9 @@ public abstract class AbstractUSBHIDService extends Service {
 	}
 
 	public void onDeviceSelected(UsbDevice device) {
+	}
+
+	public void onDeviceAttached(UsbDevice device) {
 	}
 
 	public CharSequence onBuildingDevicesList(UsbDevice usbDevice) {

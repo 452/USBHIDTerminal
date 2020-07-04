@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         applicationId "com.appspot.usbhidterminal"
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode computeVersionCode()
         versionName computeVersionName()

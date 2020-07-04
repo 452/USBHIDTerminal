@@ -109,7 +109,6 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		mLog("Initialized\nPlease select your USB HID device\n", false);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		edtxtHidInput.setText("test");
-		// btnSend.setEnabled(true);
 	}
 
 	public void onClick(View v) {

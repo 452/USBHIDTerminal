@@ -3,13 +3,19 @@ package com.appspot.usbhidterminal.core.services;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.hardware.usb.UsbConfiguration;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbEndpoint;
+import android.hardware.usb.UsbInterface;
+
 import androidx.core.app.NotificationCompat;
 
 import com.appspot.usbhidterminal.R;
 import com.appspot.usbhidterminal.USBHIDTerminal;
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.USBUtils;
+import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
+import com.appspot.usbhidterminal.core.events.DeviceDetachedEvent;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 
@@ -40,22 +46,103 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onDeviceConnected(UsbDevice device) {
-		mLog("device connected");
+		mLog("device VID:0x" + Integer.toHexString(device.getVendorId()) + " PID:0x" + Integer.toHexString(device.getProductId()) + " " + device.getDeviceName() + " connected");
 	}
 
 	@Override
 	public void onDeviceDisconnected(UsbDevice device) {
 		mLog("device disconnected");
+		eventBus.post(new DeviceDetachedEvent());
 	}
 
 	@Override
 	public void onDeviceSelected(UsbDevice device) {
-		mLog("Selected device VID:" + Integer.toHexString(device.getVendorId()) + " PID:" + Integer.toHexString(device.getProductId()));
+		mLog("Selected device VID:0x" + Integer.toHexString(device.getVendorId()) + " PID:0x" + Integer.toHexString(device.getProductId()));
+		mLog("id " + device.getDeviceId());
+		mLog("name " + device.getDeviceName());
+		mLog("manufacturer name " + device.getManufacturerName());
+		mLog("serial number " + device.getSerialNumber());
+		mLog("class " + device.getDeviceClass());
+		mLog("subclass " + device.getDeviceSubclass());
+		mLog("protocol " + showDecHex(device.getDeviceProtocol()));
+		mLog("");
+		mLog("interfaces count " + device.getInterfaceCount());
+		for (int i = 0; i < device.getInterfaceCount(); i++) {
+			mLog("");
+			mLog("interface " + i);
+			UsbInterface dInterface = device.getInterface(i);
+			mLog(" name " + dInterface.getName());
+			mLog(" id " + dInterface.getId());
+			mLog(" class " + dInterface.getInterfaceClass());
+			mLog(" subclass " + dInterface.getInterfaceSubclass());
+			mLog(" protocol " + showDecHex(dInterface.getInterfaceProtocol()));
+			mLog("");
+			mLog(" endpoint count " + dInterface.getEndpointCount());
+			for (int ien = 0; ien < dInterface.getEndpointCount(); ien++) {
+				UsbEndpoint endpoint = dInterface.getEndpoint(ien);
+				mLog("");
+				mLog("  endpoint " + ien);
+				mLog("  endpoint number " + endpoint.getEndpointNumber());
+				mLog("  address " + showDecHex(endpoint.getAddress()));
+				mLog("  type " + showDecHex(endpoint.getType()));
+				mLog("  direction " + showDecHex(endpoint.getDirection()));
+				mLog("  max packet size " + endpoint.getMaxPacketSize());
+				mLog("  interval " + endpoint.getInterval());
+				mLog("  attributes " + showDecHex(endpoint.getAttributes()));
+			}
+		}
+		mLog("");
+		mLog("configuration count " + device.getConfigurationCount());
+		for (int i = 0; i < device.getConfigurationCount(); i++) {
+			UsbConfiguration configuration = device.getConfiguration(i);
+			mLog("");
+			mLog("configuration " + i);
+			mLog(" name " + configuration.getName());
+			mLog(" id " + configuration.getId());
+			mLog(" max power " + configuration.getMaxPower());
+			mLog(" is self powered " + configuration.isSelfPowered());
+			mLog("");
+			mLog("configuration interfaces count " + configuration.getInterfaceCount());
+			for (int ic = 0; i < configuration.getInterfaceCount(); i++) {
+				mLog("");
+				mLog("configuration interface " + ic);
+				UsbInterface cInterface = configuration.getInterface(i);
+				mLog(" name " + cInterface.getName());
+				mLog(" id " + cInterface.getId());
+				mLog(" class " + cInterface.getInterfaceClass());
+				mLog(" subclass " + cInterface.getInterfaceSubclass());
+				mLog(" protocol " + showDecHex(cInterface.getInterfaceProtocol()));
+				mLog("");
+				mLog(" configuration endpoint count " + cInterface.getEndpointCount());
+				for (int ien = 0; ien < cInterface.getEndpointCount(); ien++) {
+					UsbEndpoint endpoint = cInterface.getEndpoint(ien);
+					mLog("");
+					mLog("  endpoint " + ien);
+					mLog("  endpoint number " + endpoint.getEndpointNumber());
+					mLog("  address " + showDecHex(endpoint.getAddress()));
+					mLog("  type " + showDecHex(endpoint.getType()));
+					mLog("  direction " + showDecHex(endpoint.getDirection()));
+					mLog("  max packet size " + endpoint.getMaxPacketSize());
+					mLog("  interval " + endpoint.getInterval());
+					mLog("  attributes " + showDecHex(endpoint.getAttributes()));
+				}
+			}
+		}
+
+	}
+
+	@Override
+	public void onDeviceAttached(UsbDevice device) {
+		eventBus.post(new DeviceAttachedEvent());
+	}
+
+	private String showDecHex(int data) {
+		return  data + " 0x" + Integer.toHexString(data);
 	}
 
 	@Override
 	public CharSequence onBuildingDevicesList(UsbDevice usbDevice) {
-		return "devID:" + usbDevice.getDeviceId() + " VID:" + Integer.toHexString(usbDevice.getVendorId()) + " PID:" + Integer.toHexString(usbDevice.getProductId()) + " " + usbDevice.getDeviceName();
+		return "VID:0x" + Integer.toHexString(usbDevice.getVendorId()) + " PID:0x" + Integer.toHexString(usbDevice.getProductId()) + " " + usbDevice.getDeviceName() + " devID:" + usbDevice.getDeviceId();
 	}
 
 	@Override
@@ -65,9 +152,13 @@ public class USBHIDService extends AbstractUSBHIDService {
 
 	@Override
 	public void onUSBDataSended(int status, byte[] out) {
-		mLog("Sended " + status + " bytes");
-		for (int i = 0; i < out.length/* && out[i] != 0*/; i++) {
-			mLog(Consts.SPACE + USBUtils.toInt(out[i]));
+		if (status <= 0) {
+			mLog("Unable to send");
+		} else {
+			mLog("Sended " + status + " bytes");
+			for (int i = 0; i < out.length/* && out[i] != 0*/; i++) {
+				mLog(Consts.SPACE + USBUtils.toInt(out[i]));
+			}
 		}
 	}
 
