@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.hardware.usb.UsbConfiguration;
+import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
@@ -59,12 +60,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 	@Override
 	public void onDeviceSelected(UsbDevice device) {
 		mLog("Selected device VID:0x" + Integer.toHexString(device.getVendorId()) + " PID:0x" + Integer.toHexString(device.getProductId()));
-		mLog("id " + device.getDeviceId());
+		mLog("id " + showDecHex(device.getDeviceId()));
 		mLog("name " + device.getDeviceName());
 		mLog("manufacturer name " + device.getManufacturerName());
 		mLog("serial number " + device.getSerialNumber());
-		mLog("class " + device.getDeviceClass());
-		mLog("subclass " + device.getDeviceSubclass());
+		mLog("class " + showDecHex(device.getDeviceClass()));
+		mLog("subclass " + showDecHex(device.getDeviceSubclass()));
 		mLog("protocol " + showDecHex(device.getDeviceProtocol()));
 		mLog("");
 		mLog("interfaces count " + device.getInterfaceCount());
@@ -73,9 +74,9 @@ public class USBHIDService extends AbstractUSBHIDService {
 			mLog("interface " + i);
 			UsbInterface dInterface = device.getInterface(i);
 			mLog(" name " + dInterface.getName());
-			mLog(" id " + dInterface.getId());
-			mLog(" class " + dInterface.getInterfaceClass());
-			mLog(" subclass " + dInterface.getInterfaceSubclass());
+			mLog(" id " + showDecHex(dInterface.getId()));
+			mLog(" class " + showDecHex(dInterface.getInterfaceClass()));
+			mLog(" subclass " + showDecHex(dInterface.getInterfaceSubclass()));
 			mLog(" protocol " + showDecHex(dInterface.getInterfaceProtocol()));
 			mLog("");
 			mLog(" endpoint count " + dInterface.getEndpointCount());
@@ -86,7 +87,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 				mLog("  endpoint number " + endpoint.getEndpointNumber());
 				mLog("  address " + showDecHex(endpoint.getAddress()));
 				mLog("  type " + showDecHex(endpoint.getType()));
-				mLog("  direction " + showDecHex(endpoint.getDirection()));
+				mLog("  direction " + directionInfo(endpoint.getDirection()));
 				mLog("  max packet size " + endpoint.getMaxPacketSize());
 				mLog("  interval " + endpoint.getInterval());
 				mLog("  attributes " + showDecHex(endpoint.getAttributes()));
@@ -99,7 +100,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 			mLog("");
 			mLog("configuration " + i);
 			mLog(" name " + configuration.getName());
-			mLog(" id " + configuration.getId());
+			mLog(" id " + showDecHex(configuration.getId()));
 			mLog(" max power " + configuration.getMaxPower());
 			mLog(" is self powered " + configuration.isSelfPowered());
 			mLog("");
@@ -109,9 +110,9 @@ public class USBHIDService extends AbstractUSBHIDService {
 				mLog("configuration interface " + ic);
 				UsbInterface cInterface = configuration.getInterface(i);
 				mLog(" name " + cInterface.getName());
-				mLog(" id " + cInterface.getId());
-				mLog(" class " + cInterface.getInterfaceClass());
-				mLog(" subclass " + cInterface.getInterfaceSubclass());
+				mLog(" id " + showDecHex(cInterface.getId()));
+				mLog(" class " + showDecHex(cInterface.getInterfaceClass()));
+				mLog(" subclass " + showDecHex(cInterface.getInterfaceSubclass()));
 				mLog(" protocol " + showDecHex(cInterface.getInterfaceProtocol()));
 				mLog("");
 				mLog(" configuration endpoint count " + cInterface.getEndpointCount());
@@ -122,7 +123,7 @@ public class USBHIDService extends AbstractUSBHIDService {
 					mLog("  endpoint number " + endpoint.getEndpointNumber());
 					mLog("  address " + showDecHex(endpoint.getAddress()));
 					mLog("  type " + showDecHex(endpoint.getType()));
-					mLog("  direction " + showDecHex(endpoint.getDirection()));
+					mLog("  direction " + directionInfo(endpoint.getDirection()));
 					mLog("  max packet size " + endpoint.getMaxPacketSize());
 					mLog("  interval " + endpoint.getInterval());
 					mLog("  attributes " + showDecHex(endpoint.getAttributes()));
@@ -140,6 +141,16 @@ public class USBHIDService extends AbstractUSBHIDService {
 	@Override
 	public void onShowDevicesList(CharSequence[] deviceName) {
 		eventBus.post(new ShowDevicesListEvent(deviceName));
+	}
+
+	private String directionInfo(int data) {
+		if (UsbConstants.USB_DIR_IN == data) {
+			return "IN " + showDecHex(data);
+		}
+		if (UsbConstants.USB_DIR_OUT == data) {
+			return "OUT " + showDecHex(data);
+		}
+		return "NA " + showDecHex(data);
 	}
 
 	private String showDecHex(int data) {
