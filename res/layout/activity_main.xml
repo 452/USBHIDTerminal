@@ -1,43 +1,35 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="top|left"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:orientation="vertical"
     android:windowSoftInputMode="stateHidden"
-    tools:context=".USBHIDTerminal" >
+    tools:context=".USBHIDTerminal">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/btnSelectHIDDevice"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:gravity="top"
-        android:orientation="horizontal" >
+        android:minWidth="50dip"
+        android:minHeight="36dip"
+        android:text="@string/selectHIDDevice"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
 
-        <Button
-            android:id="@+id/btnSelectHIDDevice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="36dip"
-            android:minWidth="50dip"
-            android:text="@string/selectHIDDevice"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse" />
-
-        <Button
-            android:id="@+id/btnClear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|left"
-            android:minHeight="36dip"
-            android:text="@string/clear"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/btnClear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/btnSelectHIDDevice"
+        android:minHeight="36dip"
+        android:text="@string/clear"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
 
     <RadioGroup
         android:id="@+id/radioGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:layout_below="@id/btnSelectHIDDevice"
+        android:orientation="horizontal">
 
         <RadioButton
             android:id="@+id/rbSendText"
@@ -55,47 +47,42 @@
             android:textAppearance="?android:attr/textAppearanceSmallInverse" />
     </RadioGroup>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/radioGroup"
+        android:enabled="false"
+        android:minHeight="36dip"
+        android:text="@string/send"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse">
+
+        <requestFocus />
+    </Button>
+
+    <EditText
+        android:id="@+id/edtxtHidInput"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_gravity="top"
-        android:layout_weight="1"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:layout_below="@id/radioGroup"
+        android:layout_toRightOf="@id/btnSend"
+        android:inputType="text"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <Button
-                android:id="@+id/btnSend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:minHeight="36dip"
-                android:text="@string/send"
-                android:textAppearance="?android:attr/textAppearanceSmallInverse" >
-
-                <requestFocus />
-            </Button>
-
-            <EditText
-                android:id="@+id/edtxtHidInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textAppearance="?android:attr/textAppearanceSmallInverse" />
-        </LinearLayout>
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/btnSend"
+        android:orientation="vertical">
 
         <EditText
             android:id="@+id/edtlogText"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="top"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:clickable="false"
             android:inputType="textMultiLine"
-            android:scrollbars="vertical"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse" >
-        </EditText>
-    </LinearLayout>
+            android:textAppearance="?android:attr/textAppearanceSmallInverse"></EditText>
+    </ScrollView>
 
-</LinearLayout>
+</RelativeLayout>
