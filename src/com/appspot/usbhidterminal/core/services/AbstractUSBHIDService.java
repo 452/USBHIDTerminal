@@ -34,8 +34,9 @@ public abstract class AbstractUSBHIDService extends Service {
 
 	private final Handler uiHandler = new Handler();
 
+	private List<UsbInterface> interfacesList = null;
+
 	private UsbManager mUsbManager;
-	private UsbEndpoint endPointRead;
 	private UsbEndpoint endPointWrite;
 	private UsbDeviceConnection connection;
 	private UsbDevice device;
@@ -43,7 +44,6 @@ public abstract class AbstractUSBHIDService extends Service {
 	private IntentFilter filter;
 	private PendingIntent mPermissionIntent;
 
-	private int packetSize;
 	private boolean sendedDataType;
 
 	protected EventBus eventBus = EventBus.getDefault();
@@ -96,18 +96,24 @@ public abstract class AbstractUSBHIDService extends Service {
 		@Override
 		public void run() {
 			try {
-				if (connection != null && endPointRead != null) {
+				if (connection != null) {
 					while (!isStopped) {
-						final byte[] buffer = new byte[packetSize];
-						final int status = connection.bulkTransfer(endPointRead, buffer, packetSize, 100);
-						if (status > 0) {
-							uiHandler.post(new Runnable() {
-								@Override
-								public void run() {
-									onUSBDataReceive(buffer);
+						for (UsbInterface intf: interfacesList) {
+							for (int i = 0; i < intf.getEndpointCount(); i++) {
+								UsbEndpoint endPointRead = intf.getEndpoint(i);
+								if (UsbConstants.USB_DIR_IN == endPointRead.getDirection()) {
+									final byte[] buffer = new byte[endPointRead.getMaxPacketSize()];
+									final int status = connection.bulkTransfer(endPointRead, buffer, endPointRead.getMaxPacketSize(), 100);
+									if (status > 0) {
+										uiHandler.post(new Runnable() {
+											@Override
+											public void run() {
+												onUSBDataReceive(buffer);
+											}
+										});
+									}
 								}
-							});
-
+							}
 						}
 					}
 				}
@@ -195,11 +201,19 @@ public abstract class AbstractUSBHIDService extends Service {
 			if (device != null && intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
 				onDeviceSelected(device);
 				connection = mUsbManager.openDevice(device);
-				UsbInterface intf = device.getInterface(0);
-				if (null == connection) {
-					// mLog("(unable to establish connection)\n");
-				} else {
+				if (connection == null) {
+					return;
+				}
+				interfacesList = new LinkedList();
+				UsbInterface intf = null;
+				for(int i = 0; i < device.getInterfaceCount(); i++) {
+					intf = device.getInterface(i);
 					connection.claimInterface(intf, true);
+					interfacesList.add(intf);
+				}
+				if (intf == null) {
+					Log.e("UsbInterface", "Device have no UsbInterface");
+					return;
 				}
 				try {
 					if (UsbConstants.USB_DIR_OUT == intf.getEndpoint(1).getDirection()) {
@@ -207,14 +221,6 @@ public abstract class AbstractUSBHIDService extends Service {
 					}
 				} catch (Exception e) {
 					Log.e("endPointWrite", "Device have no endPointWrite", e);
-				}
-				try {
-					if (UsbConstants.USB_DIR_IN == intf.getEndpoint(0).getDirection()) {
-						endPointRead = intf.getEndpoint(0);
-						packetSize = endPointRead.getMaxPacketSize();
-					}
-				} catch (Exception e) {
-					Log.e("endPointWrite", "Device have no endPointRead", e);
 				}
 				usbThreadDataReceiver = new USBThreadDataReceiver();
 				usbThreadDataReceiver.start();
