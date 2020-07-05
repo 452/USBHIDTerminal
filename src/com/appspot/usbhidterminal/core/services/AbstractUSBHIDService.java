@@ -30,6 +30,12 @@ public abstract class AbstractUSBHIDService extends Service {
 
 	private static final String TAG = AbstractUSBHIDService.class.getCanonicalName();
 
+	public static final int REQUEST_GET_REPORT = 0x01;
+	public static final int REQUEST_SET_REPORT = 0x09;
+	public static final int REPORT_TYPE_INPUT = 0x0100;
+	public static final int REPORT_TYPE_OUTPUT = 0x0200;
+	public static final int REPORT_TYPE_FEATURE = 0x0300;
+
 	private USBThreadDataReceiver usbThreadDataReceiver;
 
 	private final Handler uiHandler = new Handler();
@@ -102,7 +108,7 @@ public abstract class AbstractUSBHIDService extends Service {
 								UsbEndpoint endPointRead = intf.getEndpoint(i);
 								if (UsbConstants.USB_DIR_IN == endPointRead.getDirection()) {
 									final byte[] buffer = new byte[endPointRead.getMaxPacketSize()];
-									final int status = connection.bulkTransfer(endPointRead, buffer, endPointRead.getMaxPacketSize(), 100);
+									final int status = connection.bulkTransfer(endPointRead, buffer, buffer.length, 100);
 									if (status > 0) {
 										uiHandler.post(new Runnable() {
 											@Override
@@ -110,6 +116,16 @@ public abstract class AbstractUSBHIDService extends Service {
 												onUSBDataReceive(buffer);
 											}
 										});
+									} else {
+										int transfer = connection.controlTransfer(0xA0, REQUEST_GET_REPORT, REPORT_TYPE_OUTPUT, 0x00, buffer, buffer.length, 100);
+										if (transfer > 0) {
+											uiHandler.post(new Runnable() {
+												@Override
+												public void run() {
+													onUSBDataReceive(buffer);
+												}
+											});
+										}
 									}
 								}
 							}
@@ -169,6 +185,8 @@ public abstract class AbstractUSBHIDService extends Service {
 							}
 						}
 						int status = connection.bulkTransfer(endPointWrite, out, out.length, 250);
+						onUSBDataSended(status, out);
+						status = connection.controlTransfer(0x21, REQUEST_SET_REPORT, REPORT_TYPE_OUTPUT, 0x02, out, out.length, 250);
 						onUSBDataSended(status, out);
 					}
 				}
