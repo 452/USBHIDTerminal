@@ -6,6 +6,8 @@ import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import de.greenrobot.event.EventBus;
 import fi.iki.elonen.NanoHTTPD;
@@ -18,11 +20,26 @@ public class Ws extends WebSocket {
 
     private EventBus eventBus = EventBus.getDefault();
     private NanoHTTPD.IHTTPSession httpSession;
+    private TimerTask pingTimer;
 
     public Ws(NanoHTTPD.IHTTPSession handshakeRequest) {
         super(handshakeRequest);
         this.httpSession = handshakeRequest;
         eventBus.register(this);
+
+        // prevent connection from being closed due to inactivity:
+        // send ping messages every 2 seconds, and the client will respond with pong
+        pingTimer = new TimerTask() {
+            @Override
+            public void run(){
+                try {
+                    ping(new byte[0]);
+                } catch (IOException e) {
+                    pingTimer.cancel();
+                }
+            }
+        };
+        new Timer().schedule(pingTimer, 1000, 2000);
     }
 
     @Override
@@ -37,6 +54,7 @@ public class Ws extends WebSocket {
     @Override
     protected void onClose(WebSocketFrame.CloseCode code, String reason,
                            boolean initiatedByRemote) {
+        pingTimer.cancel();
         eventBus.unregister(this);
     }
 
