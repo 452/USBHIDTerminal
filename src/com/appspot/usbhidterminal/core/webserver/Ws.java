@@ -5,11 +5,15 @@ import android.util.Log;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.greenrobot.event.EventBus;
+
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.WebSocket;
 import fi.iki.elonen.WebSocketFrame;
@@ -62,6 +66,7 @@ public class Ws extends WebSocket {
     protected void onException(IOException e) {
     }
 
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onEvent(USBDataReceiveEvent event) {
         wsSend(event.getData());
     }

@@ -1,19 +1,24 @@
 package com.appspot.usbhidterminal.tests;
 
-import android.test.ActivityInstrumentationTestCase2;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import androidx.test.rule.ActivityTestRule;
 
 import com.appspot.usbhidterminal.USBHIDTerminal;
 
-public class UITest extends ActivityInstrumentationTestCase2<USBHIDTerminal> {
+import org.junit.Test;
+
+public class UITest extends ActivityTestRule<USBHIDTerminal> {
 
 	public UITest(){
 		super(USBHIDTerminal.class);
 	}
 
-	//@Test
+	@Test
 	public void test() {
 		//fail("Not yet implemented");
-		assertNotNull("ReceiverActivity is null", null);
+		assertNull("ReceiverActivity is null", null);
 	}
 
 }

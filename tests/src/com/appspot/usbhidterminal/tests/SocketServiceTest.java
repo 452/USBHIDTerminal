@@ -1,27 +1,26 @@
 package com.appspot.usbhidterminal.tests;
 
+import static org.junit.Assert.assertNotNull;
+
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
+
+import androidx.test.rule.ActivityTestRule;
 
 import com.appspot.usbhidterminal.USBHIDTerminal;
 import com.appspot.usbhidterminal.core.services.SocketService;
 
-public class SocketServiceTest extends ActivityInstrumentationTestCase2<USBHIDTerminal> {
+import org.junit.Test;
+
+public class SocketServiceTest extends ActivityTestRule<USBHIDTerminal> {
 
 	public SocketServiceTest(){
 		super(USBHIDTerminal.class);
 	}
 
-	private Intent socketService;
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		System.out.println("Start tst");
-		socketService = new Intent(super.getActivity(), SocketService.class);
-	}
-
+	@Test
 	public void test() {
+		System.out.println("Start tst");
+		Intent socketService = new Intent(super.getActivity(), SocketService.class);
 		socketService.setAction("ABCD");
 		super.getActivity().startService(socketService);
 		for (int i = 0; i < 1; i++) {
@@ -31,6 +30,7 @@ public class SocketServiceTest extends ActivityInstrumentationTestCase2<USBHIDTe
 	}
 
 	private void send(String data){
+		Intent socketService = new Intent(super.getActivity(), SocketService.class);
 		socketService.setAction(data);
 		super.getActivity().startService(socketService);
 	}

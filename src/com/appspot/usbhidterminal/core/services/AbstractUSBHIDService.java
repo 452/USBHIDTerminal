@@ -1,5 +1,9 @@
 package com.appspot.usbhidterminal.core.services;
 
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +19,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -24,7 +29,10 @@ import com.appspot.usbhidterminal.core.USBUtils;
 import com.appspot.usbhidterminal.core.events.PrepareDevicesListEvent;
 import com.appspot.usbhidterminal.core.events.SelectDeviceEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
-import de.greenrobot.event.EventBus;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public abstract class AbstractUSBHIDService extends Service {
 
@@ -61,13 +69,17 @@ public abstract class AbstractUSBHIDService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(Consts.ACTION_USB_PERMISSION), 0);
+		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(Consts.ACTION_USB_PERMISSION), PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT : 0));
 		filter = new IntentFilter(Consts.ACTION_USB_PERMISSION);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		filter.addAction(Consts.ACTION_USB_SHOW_DEVICES_LIST);
 		filter.addAction(Consts.ACTION_USB_DATA_TYPE);
-		registerReceiver(mUsbReceiver, filter);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			registerReceiver(mUsbReceiver, filter, Context.RECEIVER_EXPORTED);
+		} else {
+			registerReceiver(mUsbReceiver, filter);
+		}
 		eventBus.register(this);
 	}
 
@@ -142,16 +154,19 @@ public abstract class AbstractUSBHIDService extends Service {
 		}
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEventMainThread(USBDataSendEvent event){
 		sendData(event.getData(), sendedDataType);
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEvent(SelectDeviceEvent event) {
 		device = (UsbDevice) mUsbManager.getDeviceList().values().toArray()[event.getDevice()];
 		mUsbManager.requestPermission(device, mPermissionIntent);
 	}
 
-    public void onEventMainThread(PrepareDevicesListEvent event) {
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void onEventMainThread(PrepareDevicesListEvent event) {
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<CharSequence> list = new LinkedList<CharSequence>();
         for (UsbDevice usbDevice : mUsbManager.getDeviceList().values()) {
@@ -221,22 +236,28 @@ public abstract class AbstractUSBHIDService extends Service {
 		}
 
 		private void setDevice(Intent intent) {
-			device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-			if (device != null && intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-				onDeviceSelected(device);
-				connection = mUsbManager.openDevice(device);
-				if (connection == null) {
-					return;
+			synchronized (this) {
+				device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+				Log.d(TAG, "Broadcast received. Device: " + device);
+				if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) && device != null) {
+					Log.d(TAG, "Permission granted for device: " + device.getDeviceName());
+					onDeviceSelected(device);
+					connection = mUsbManager.openDevice(device);
+					if (connection == null) {
+						return;
+					}
+					interfacesList = new LinkedList<>();
+					for (int i = 0; i < device.getInterfaceCount(); i++) {
+						UsbInterface intf = device.getInterface(i);
+						connection.claimInterface(intf, true);
+						interfacesList.add(intf);
+					}
+					usbThreadDataReceiver = new USBThreadDataReceiver();
+					usbThreadDataReceiver.start();
+					onDeviceAttached(device);
+				} else {
+					Log.e(TAG, "Permission denied for the USB HID device");
 				}
-				interfacesList = new LinkedList();
-				for(int i = 0; i < device.getInterfaceCount(); i++) {
-					UsbInterface intf = device.getInterface(i);
-					connection.claimInterface(intf, true);
-					interfacesList.add(intf);
-				}
-				usbThreadDataReceiver = new USBThreadDataReceiver();
-				usbThreadDataReceiver.start();
-				onDeviceAttached(device);
 			}
 		}
 	};

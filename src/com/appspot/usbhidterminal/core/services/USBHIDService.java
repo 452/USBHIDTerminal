@@ -219,12 +219,12 @@ public class USBHIDService extends AbstractUSBHIDService {
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
 				new Intent(this, USBHIDTerminal.class)
 						.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP),
-				0);
+				PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 		PendingIntent pendingCloseIntent = PendingIntent.getActivity(this, 0,
 				new Intent(this, USBHIDTerminal.class)
 						.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
 						.setAction(Consts.USB_HID_TERMINAL_CLOSE_ACTION),
-				0);
+				PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 		mNotificationBuilder
 				.setSmallIcon(R.drawable.ic_launcher)
 				.setCategory(NotificationCompat.CATEGORY_SERVICE)

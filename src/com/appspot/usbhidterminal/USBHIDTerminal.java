@@ -30,8 +30,10 @@ import com.appspot.usbhidterminal.core.services.SocketService;
 import com.appspot.usbhidterminal.core.services.USBHIDService;
 import com.appspot.usbhidterminal.core.services.WebServerService;
 
-import de.greenrobot.event.EventBus;
-import de.greenrobot.event.EventBusException;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.EventBusException;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
@@ -53,7 +55,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 
 	protected EventBus eventBus;
 
-	private SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+	private final SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 			if ("enable_socket_server".equals(key) || "socket_server_port".equals(key)) {
@@ -145,22 +147,27 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		builder.show();
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEvent(USBDataReceiveEvent event) {
 		mLog(event.getData() + " \nReceived " + event.getBytesCount() + " bytes", true);
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEvent(LogMessageEvent event) {
 		mLog(event.getData(), true);
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEvent(ShowDevicesListEvent event) {
 		showListOfDevices(event.getCharSequenceArray());
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEvent(DeviceAttachedEvent event) {
 		btnSend.setEnabled(true);
 	}
 
+	@Subscribe(threadMode = ThreadMode.MAIN)
 	public void onEvent(DeviceDetachedEvent event) {
 		btnSend.setEnabled(false);
 	}

@@ -18,9 +18,9 @@ import com.appspot.usbhidterminal.core.USBUtils;
 import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.webserver.WebServer;
 
-import java.io.IOException;
+import org.greenrobot.eventbus.EventBus;
 
-import de.greenrobot.event.EventBus;
+import java.io.IOException;
 
 public class WebServerService extends Service {
 
@@ -53,7 +53,7 @@ public class WebServerService extends Service {
                if (webServer == null) {
                    webServer = new WebServer(this.getAssets(), serverPort);
                    webServer.start();
-                   WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                   WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
                    if (wm.isWifiEnabled()) {
                        String ip = USBUtils.getIpAddress(wm.getConnectionInfo().getIpAddress());
                        EventBus.getDefault().post(new LogMessageEvent("Web service launched\n" +
@@ -89,12 +89,12 @@ public class WebServerService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, USBHIDTerminal.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP),
-                0);
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent pendingCloseIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, USBHIDTerminal.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         .setAction(Consts.WEB_SERVER_CLOSE_ACTION),
-                0);
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationBuilder
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)

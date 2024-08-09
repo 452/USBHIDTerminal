@@ -17,7 +17,7 @@ for Gradle: [https://docs.gradle.org/current/userguide/installation.html]
 
     $ git clone https://github.com/452/USBHIDTerminal.git
     $ cd USBHIDTerminal
-    $ gradle build
+    $ ./gradlew build
 
 result you can find:
 > USBHIDTerminal/build/outputs/apk/USBHIDTerminal-release-unsigned.apk
@@ -29,7 +29,7 @@ We can make this world better.
 
 ## LICENSE
 
-Copyright 2015 452 emetemunoy.
+Copyright 2024 452 emetemunoy.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

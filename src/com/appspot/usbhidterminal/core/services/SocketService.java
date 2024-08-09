@@ -7,8 +7,9 @@ import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
-import androidx.core.app.NotificationCompat;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import com.appspot.usbhidterminal.R;
 import com.appspot.usbhidterminal.USBHIDTerminal;
@@ -18,6 +19,10 @@ import com.appspot.usbhidterminal.core.events.LogMessageEvent;
 import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
 import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,8 +31,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-
-import de.greenrobot.event.EventBus;
 
 public class SocketService extends Service {
 
@@ -97,7 +100,7 @@ public class SocketService extends Service {
             if (socketThreadDataReceiver == null) {
                 socketThreadDataReceiver = new SocketThreadDataReceiver();
                 socketThreadDataReceiver.start();
-                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
                 if (wm.isWifiEnabled()) {
                     String ip = USBUtils.getIpAddress(wm.getConnectionInfo().getIpAddress());
                     EventBus.getDefault().post(new LogMessageEvent("Socket service launched\n" +
@@ -131,6 +134,7 @@ public class SocketService extends Service {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(USBDataReceiveEvent event) {
         if (socket != null && socket.isConnected()) {
             try {
@@ -177,12 +181,12 @@ public class SocketService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, USBHIDTerminal.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP),
-                0);
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent pendingCloseIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, USBHIDTerminal.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         .setAction(Consts.SOCKET_SERVER_CLOSE_ACTION),
-                0);
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationBuilder
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)

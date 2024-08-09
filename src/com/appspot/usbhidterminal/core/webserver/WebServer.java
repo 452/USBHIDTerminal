@@ -3,17 +3,12 @@ package com.appspot.usbhidterminal.core.webserver;
 import android.content.res.AssetManager;
 import android.util.Log;
 
-import com.appspot.usbhidterminal.core.events.USBDataReceiveEvent;
-import com.appspot.usbhidterminal.core.events.USBDataSendEvent;
-
 import java.io.IOException;
 import java.io.InputStream;
 
-import de.greenrobot.event.EventBus;
 import fi.iki.elonen.IWebSocketFactory;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.WebSocket;
-import fi.iki.elonen.WebSocketFrame;
 import fi.iki.elonen.WebSocketResponseHandler;
 
 public class WebServer extends NanoHTTPD {

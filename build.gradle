@@ -13,7 +13,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.3'
+        classpath 'com.android.tools.build:gradle:8.5.2'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -23,29 +23,30 @@ buildscript {
 repositories {
     google()
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.core:core:1.13.1'
     implementation 'com.nanohttpd:nanohttpd:2.1.1'
     implementation 'com.nanohttpd:nanohttpd-websocket:2.1.1'
-    implementation 'de.greenrobot:eventbus:2.4.0'
+    implementation 'org.greenrobot:eventbus:3.3.1'
+    // Testing-only dependencies
+    androidTestImplementation "androidx.test:core:1.6.1";
+    androidTestImplementation "androidx.test.ext:junit:1.2.1";
+    androidTestImplementation "androidx.test:runner:1.6.1";
+    androidTestImplementation "androidx.test:rules:1.6.1";
 }
 
 android {
 
-    lintOptions {
-        abortOnError false
-    }
+    namespace 'com.appspot.usbhidterminal'
 
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.appspot.usbhidterminal"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 34
         versionCode computeVersionCode()
         versionName computeVersionName()
     }
@@ -71,20 +72,15 @@ android {
         androidTest.setRoot('tests')
         androidTest.java.srcDirs = ['tests/src']
     }
-
     packagingOptions {
-        exclude 'META-INF/DEPENDENCIES.txt'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/dependencies.txt'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/license.txt'
-        exclude 'META-INF/LGPL2.1'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/notice.txt'
-        exclude 'LICENSE.txt'
+        resources {
+            excludes += ['META-INF/DEPENDENCIES.txt', 'META-INF/DEPENDENCIES', 'META-INF/dependencies.txt', 'META-INF/LICENSE.txt', 'META-INF/LICENSE', 'META-INF/license.txt', 'META-INF/LGPL2.1', 'META-INF/NOTICE.txt', 'META-INF/NOTICE', 'META-INF/notice.txt', 'LICENSE.txt']
+        }
     }
+    lint {
+        abortOnError false
+    }
+
 }
 
 task adbConfig(type: Exec) {
