@@ -3,8 +3,6 @@
     android:versionCode="12"
     android:versionName="1.1.1" >
 
-    <uses-sdk android:targetSdkVersion="34" />
-
     <uses-feature android:name="android.hardware.usb.host" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />

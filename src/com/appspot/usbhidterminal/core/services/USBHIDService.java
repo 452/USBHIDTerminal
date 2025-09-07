@@ -73,6 +73,10 @@ public class USBHIDService extends AbstractUSBHIDService {
 			mLog("");
 			mLog("interface " + i);
 			UsbInterface dInterface = device.getInterface(i);
+			if (dInterface == null) {
+				mLog(" interface " + i + " is null");
+				continue;
+			}
 			mLog(" name " + dInterface.getName());
 			mLog(" id " + showDecHex(dInterface.getId()));
 			mLog(" class " + showDecHex(dInterface.getInterfaceClass()));
@@ -82,6 +86,10 @@ public class USBHIDService extends AbstractUSBHIDService {
 			mLog(" endpoint count " + dInterface.getEndpointCount());
 			for (int ien = 0; ien < dInterface.getEndpointCount(); ien++) {
 				UsbEndpoint endpoint = dInterface.getEndpoint(ien);
+				if (endpoint == null) {
+					mLog("  endpoint " + ien + " is null");
+					continue;
+				}
 				mLog("");
 				mLog("  endpoint " + ien);
 				mLog("  endpoint number " + endpoint.getEndpointNumber());
@@ -97,6 +105,10 @@ public class USBHIDService extends AbstractUSBHIDService {
 		mLog("configuration count " + device.getConfigurationCount());
 		for (int i = 0; i < device.getConfigurationCount(); i++) {
 			UsbConfiguration configuration = device.getConfiguration(i);
+			if (configuration == null) {
+				mLog("configuration " + i + " is null");
+				continue;
+			}
 			mLog("");
 			mLog("configuration " + i);
 			mLog(" name " + configuration.getName());
@@ -105,10 +117,14 @@ public class USBHIDService extends AbstractUSBHIDService {
 			mLog(" is self powered " + configuration.isSelfPowered());
 			mLog("");
 			mLog("configuration interfaces count " + configuration.getInterfaceCount());
-			for (int ic = 0; i < configuration.getInterfaceCount(); i++) {
+			for (int ic = 0; ic < configuration.getInterfaceCount(); ic++) {
 				mLog("");
 				mLog("configuration interface " + ic);
-				UsbInterface cInterface = configuration.getInterface(i);
+				UsbInterface cInterface = configuration.getInterface(ic);
+				if (cInterface == null) {
+					mLog(" configuration interface " + ic + " is null");
+					continue;
+				}
 				mLog(" name " + cInterface.getName());
 				mLog(" id " + showDecHex(cInterface.getId()));
 				mLog(" class " + showDecHex(cInterface.getInterfaceClass()));
@@ -118,6 +134,10 @@ public class USBHIDService extends AbstractUSBHIDService {
 				mLog(" configuration endpoint count " + cInterface.getEndpointCount());
 				for (int ien = 0; ien < cInterface.getEndpointCount(); ien++) {
 					UsbEndpoint endpoint = cInterface.getEndpoint(ien);
+					if (endpoint == null) {
+						mLog("  endpoint " + ien + " is null");
+						continue;
+					}
 					mLog("");
 					mLog("  endpoint " + ien);
 					mLog("  endpoint number " + endpoint.getEndpointNumber());
@@ -130,7 +150,6 @@ public class USBHIDService extends AbstractUSBHIDService {
 				}
 			}
 		}
-
 	}
 
 	@Override
