@@ -1,6 +1,5 @@
 package com.appspot.usbhidterminal;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.DialogInterface;
@@ -8,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +14,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.appspot.usbhidterminal.core.Consts;
 import com.appspot.usbhidterminal.core.events.DeviceAttachedEvent;
@@ -35,7 +36,7 @@ import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-public class USBHIDTerminal extends Activity implements View.OnClickListener {
+public class USBHIDTerminal extends AppCompatActivity implements View.OnClickListener {
 
 	private SharedPreferences sharedPreferences;
 
@@ -58,12 +59,12 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private final SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-			if ("enable_socket_server".equals(key) || "socket_server_port".equals(key)) {
+			if (SettingsActivity.SOCKET_SERVER_ENABLED.equals(key) || SettingsActivity.SOCKET_SERVER_PORT.equals(key)) {
 				socketServiceIsStart(false);
-				socketServiceIsStart(sharedPreferences.getBoolean("enable_socket_server", false));
-			} else if ("enable_web_server".equals(key) || "web_server_port".equals(key)) {
+				socketServiceIsStart(sharedPreferences.getBoolean(SettingsActivity.SOCKET_SERVER_ENABLED, false));
+			} else if (SettingsActivity.WEB_SERVER_ENABLED.equals(key) || SettingsActivity.WEB_SERVER_PORT.equals(key)) {
 				webServerServiceIsStart(false);
-				webServerServiceIsStart(sharedPreferences.getBoolean("enable_web_server", false));
+				webServerServiceIsStart(sharedPreferences.getBoolean(SettingsActivity.WEB_SERVER_ENABLED, false));
 			}
 		}
 	};
@@ -71,8 +72,8 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 	private void prepareServices() {
 		usbService = new Intent(this, USBHIDService.class);
 		startService(usbService);
-		webServerServiceIsStart(sharedPreferences.getBoolean("enable_web_server", false));
-		socketServiceIsStart(sharedPreferences.getBoolean("enable_socket_server", false));
+		webServerServiceIsStart(sharedPreferences.getBoolean(SettingsActivity.WEB_SERVER_ENABLED, false));
+		socketServiceIsStart(sharedPreferences.getBoolean(SettingsActivity.SOCKET_SERVER_ENABLED, false));
 	}
 
 	@Override
@@ -275,7 +276,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 				break;
 			case Consts.SOCKET_SERVER_CLOSE_ACTION:
 				stopService(new Intent(this, SocketService.class));
-				sharedPreferences.edit().putBoolean("enable_socket_server", false).apply();
+				sharedPreferences.edit().putBoolean(SettingsActivity.SOCKET_SERVER_ENABLED, false).apply();
 				break;
 		}
 	}
@@ -326,7 +327,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		if (isStart) {
 			Intent webServerService = new Intent(this, WebServerService.class);
 			webServerService.setAction("start");
-			webServerService.putExtra("WEB_SERVER_PORT", Integer.parseInt(sharedPreferences.getString("web_server_port", "7799")));
+			webServerService.putExtra("WEB_SERVER_PORT", Integer.parseInt(sharedPreferences.getString(SettingsActivity.WEB_SERVER_PORT, "7799")));
 			startService(webServerService);
 		} else {
 			stopService(new Intent(this, WebServerService.class));
@@ -337,7 +338,7 @@ public class USBHIDTerminal extends Activity implements View.OnClickListener {
 		if (isStart) {
 			Intent socketServerService = new Intent(this, SocketService.class);
 			socketServerService.setAction("start");
-			socketServerService.putExtra("SOCKET_PORT", Integer.parseInt(sharedPreferences.getString("socket_server_port", "7899")));
+			socketServerService.putExtra("SOCKET_PORT", Integer.parseInt(sharedPreferences.getString(SettingsActivity.SOCKET_SERVER_PORT, "7899")));
 			startService(socketServerService);
 		} else {
 			stopService(new Intent(this, SocketService.class));

@@ -1,209 +1,176 @@
 package com.appspot.usbhidterminal;
 
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
+import android.widget.Toast;
 
-import java.util.List;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.SwitchPreferenceCompat;
 
-/**
- * A {@link PreferenceActivity} that presents a set of application settings. On
- * handset devices, settings are presented as a single list. On tablets,
- * settings are split by category, with category headers shown to the left of
- * the list of settings.
- * <p/>
- * See <a href="http://developer.android.com/design/patterns/settings.html">
- * Android Design: Settings</a> for design guidelines and the <a
- * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
- * API Guide</a> for more information on developing a Settings UI.
- */
-public class SettingsActivity extends PreferenceActivity {
-    /**
-     * Determines whether to always show the simplified settings UI, where
-     * settings are presented in a single list. When false, settings are shown
-     * as a master/detail two-pane view on tablets. When true, a single pane is
-     * shown on tablets.
-     */
-    private static final boolean ALWAYS_SIMPLE_PREFS = false;
+public class SettingsActivity extends AppCompatActivity {
 
+    public static final String WEB_SERVER_ENABLED = "web_server_enabled";
+    public static final String WEB_SERVER_PORT = "web_server_port";
+    public static final String SOCKET_SERVER_ENABLED = "socket_server_enabled";
+    public static final String SOCKET_SERVER_PORT = "socket_server_port";
+    public static final int MIN_PORT = 1024;
+    public static final int MAX_PORT = 65535;
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        setupSimplePreferencesScreen();
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(android.R.id.content, new SettingsFragment())
+                .commit();
     }
 
-    /**
-     * Shows the simplified settings UI if the device configuration if the
-     * device configuration dictates that a simplified, single-pane UI should be
-     * shown.
-     */
-    private void setupSimplePreferencesScreen() {
-        if (!isSimplePreferences(this)) {
-            return;
-        }
+    public static class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
 
-        // In the simplified UI, fragments are not used at all and we instead
-        // use the older PreferenceActivity APIs.
+        private static final InputFilter[] PORT_LENGTH_FILTER = new InputFilter[]{new InputFilter.LengthFilter(5)};
 
-        // Add 'general' preferences.
-        addPreferencesFromResource(R.xml.pref_general);
+        private EditTextPreference webPort;
+        private EditTextPreference socketPort;
 
-        // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
-        // their values. When their values change, their summaries are updated
-        // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("web_server_port"));
-        bindPreferenceSummaryToValue(findPreference("socket_server_port"));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean onIsMultiPane() {
-        return isXLargeTablet(this) && !isSimplePreferences(this);
-    }
-
-    /**
-     * Helper method to determine if the device has an extra-large screen. For
-     * example, 10" tablets are extra-large.
-     */
-    private static boolean isXLargeTablet(Context context) {
-        return (context.getResources().getConfiguration().screenLayout
-                & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
-    }
-
-    /**
-     * Determines whether the simplified settings UI should be shown. This is
-     * true if this is forced via {@link #ALWAYS_SIMPLE_PREFS}, or the device
-     * doesn't have newer APIs like {@link PreferenceFragment}, or the device
-     * doesn't have an extra-large screen. In these cases, a single-pane
-     * "simplified" settings UI should be shown.
-     */
-    private static boolean isSimplePreferences(Context context) {
-        return ALWAYS_SIMPLE_PREFS
-                || Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
-                || !isXLargeTablet(context);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public void onBuildHeaders(List<Header> target) {
-        if (!isSimplePreferences(this)) {
-            loadHeadersFromResource(R.xml.pref_headers, target);
-        }
-    }
-
-    /**
-     * A preference value change listener that updates the preference's summary
-     * to reflect its new value.
-     */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(requireContext());
 
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
+            SwitchPreferenceCompat webEnabled = buildSwitch(WEB_SERVER_ENABLED, R.string.pref_title_web_server);
+            webPort = buildPortPreference(WEB_SERVER_PORT, R.string.pref_title_web_server_port);
 
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
+            SwitchPreferenceCompat socketEnabled = buildSwitch(SOCKET_SERVER_ENABLED, R.string.pref_title_socket_server);
+            socketPort = buildPortPreference(SOCKET_SERVER_PORT, R.string.pref_title_socket_server_port);
 
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
+            screen.addPreference(webEnabled);
+            screen.addPreference(webPort);
+            screen.addPreference(socketEnabled);
+            screen.addPreference(socketPort);
+            setPreferenceScreen(screen);
+
+            if (!sp().contains(WEB_SERVER_PORT)) {
+                webPort.setText(getString(R.string.pref_default_web_server_port));
+            }
+            if (!sp().contains(SOCKET_SERVER_PORT)) {
+                socketPort.setText(getString(R.string.pref_default_socket_server_port));
+            }
+
+            syncEnabledStates();
+
+            setupEnableToggle(webEnabled, webPort, SOCKET_SERVER_ENABLED, SOCKET_SERVER_PORT);
+            setupEnableToggle(socketEnabled, socketPort, WEB_SERVER_ENABLED, WEB_SERVER_PORT);
+        }
+
+        private SwitchPreferenceCompat buildSwitch(String key, int titleRes) {
+            SwitchPreferenceCompat s = new SwitchPreferenceCompat(requireContext());
+            s.setKey(key);
+            s.setTitle(titleRes);
+            s.setDefaultValue(false);
+            s.setIconSpaceReserved(false);
+            return s;
+        }
+
+        private EditTextPreference buildPortPreference(String key, int titleRes) {
+            EditTextPreference p = new EditTextPreference(requireContext());
+            p.setKey(key);
+            p.setTitle(titleRes);
+            p.setDialogTitle(titleRes);
+            p.setSummaryProvider(EditTextPreference.SimpleSummaryProvider.getInstance());
+            p.setIconSpaceReserved(false);
+            p.setOnBindEditTextListener(editText -> {
+                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                editText.setKeyListener(DigitsKeyListener.getInstance(false, false));
+                editText.setFilters(PORT_LENGTH_FILTER);
+                editText.setSelectAllOnFocus(true);
+            });
+            p.setOnPreferenceChangeListener(this);
+            return p;
+        }
+
+        private void setupEnableToggle(SwitchPreferenceCompat selfSwitch, EditTextPreference selfPort, String otherEnabledKey, String otherPortKey) {
+            selfSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+                boolean enable = newValue instanceof Boolean && (Boolean) newValue;
+                if (enable) {
+                    boolean otherOn = sp().getBoolean(otherEnabledKey, false);
+                    if (otherOn) {
+                        String otherPort = sp().getString(otherPortKey, "");
+                        String myPort = sp().getString(selfPort.getKey(), "");
+                        if (!otherPort.isEmpty() && otherPort.equals(myPort)) {
+                            String newPort = nextDifferentPort(otherPort);
+                            selfPort.setText(newPort);
+                            Toast.makeText(requireContext(), "Port changed to " + newPort, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+                selfPort.setEnabled(enable);
+                return true;
+            });
+        }
+
+        private void syncEnabledStates() {
+            boolean webOn = sp().getBoolean(WEB_SERVER_ENABLED, false);
+            boolean socketOn = sp().getBoolean(SOCKET_SERVER_ENABLED, false);
+            webPort.setEnabled(webOn);
+            socketPort.setEnabled(socketOn);
+        }
+
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            String key = preference.getKey();
+            String stringValue = newValue == null ? "" : newValue.toString();
+            if (WEB_SERVER_PORT.equals(key) || SOCKET_SERVER_PORT.equals(key)) {
+                if (!isValidPort(stringValue)) {
+                    Toast.makeText(requireContext(), "Invalid port. Use 1–65535.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                boolean webOn = sp().getBoolean(WEB_SERVER_ENABLED, false);
+                boolean socketOn = sp().getBoolean(SOCKET_SERVER_ENABLED, false);
+                if (webOn && socketOn) {
+                    String other = WEB_SERVER_PORT.equals(key) ? sp().getString(SOCKET_SERVER_PORT, "") : sp().getString(WEB_SERVER_PORT, "");
+                    if (stringValue.equals(other) && !stringValue.isEmpty()) {
+                        Toast.makeText(requireContext(), "Ports must be different when both services are enabled.", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+                return true;
             }
             return true;
         }
-    };
 
-    /**
-     * Binds a preference's summary to its value. More specifically, when the
-     * preference's value is changed, its summary (line of text below the
-     * preference title) is updated to reflect the value. The summary is also
-     * immediately updated upon calling this method. The exact display format is
-     * dependent on the type of preference.
-     *
-     * @see #sBindPreferenceSummaryToValueListener
-     */
-    private static void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
-    }
-
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("web_server_port"));
-            bindPreferenceSummaryToValue(findPreference("socket_server_port"));
+        private boolean isValidPort(String value) {
+            try {
+                if (value.isEmpty()) return false;
+                int port = Integer.parseInt(value);
+                return port >= MIN_PORT && port <= MAX_PORT;
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
-    }
 
-    /**
-     * This fragment shows notification preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class NotificationPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
+        private String nextDifferentPort(String otherPortStr) {
+            int other;
+            try {
+                other = Integer.parseInt(otherPortStr);
+            } catch (NumberFormatException e) {
+                other = MIN_PORT;
+            }
+            int candidate = other >= MAX_PORT ? MIN_PORT : other + 1;
+            if (candidate < MIN_PORT) candidate = MIN_PORT;
+            if (Integer.toString(candidate).equals(otherPortStr)) candidate = other == MAX_PORT ? MIN_PORT : other + 1;
+            return Integer.toString(candidate);
         }
-    }
 
-    /**
-     * This fragment shows data and sync preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class DataSyncPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
+        private SharedPreferences sp() {
+            return PreferenceManager.getDefaultSharedPreferences(requireContext());
         }
     }
 }

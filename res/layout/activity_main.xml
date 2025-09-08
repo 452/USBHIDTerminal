@@ -1,35 +1,46 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:windowSoftInputMode="stateHidden"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     tools:context=".USBHIDTerminal">
 
     <Button
         android:id="@+id/btnSelectHIDDevice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="50dip"
-        android:minHeight="36dip"
+        android:minWidth="50dp"
+        android:minHeight="36dp"
         android:text="@string/selectHIDDevice"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp" />
 
     <Button
         android:id="@+id/btnClear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/btnSelectHIDDevice"
-        android:minHeight="36dip"
+        android:minHeight="36dp"
         android:text="@string/clear"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        app:layout_constraintStart_toEndOf="@id/btnSelectHIDDevice"
+        app:layout_constraintTop_toTopOf="@id/btnSelectHIDDevice"
+        android:layout_marginStart="12dp" />
 
     <RadioGroup
         android:id="@+id/radioGroup"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnSelectHIDDevice"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnSelectHIDDevice"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp">
 
         <RadioButton
             android:id="@+id/rbSendText"
@@ -37,53 +48,74 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="@string/sendText"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
         <RadioButton
             android:id="@+id/rbSendData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sendData"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:layout_marginStart="16dp" />
     </RadioGroup>
 
     <Button
         android:id="@+id/btnSend"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/radioGroup"
+        android:layout_height="40dp"
         android:enabled="false"
-        android:minHeight="36dip"
         android:text="@string/send"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse">
-
-        <requestFocus />
-    </Button>
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radioGroup"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp" />
 
     <EditText
         android:id="@+id/edtxtHidInput"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/radioGroup"
-        android:layout_toRightOf="@id/btnSend"
-        android:hint="0x81 #81"
+        android:autofillHints=""
+        android:hint="@string/edtxtHidInputHint"
         android:inputType="text"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        android:maxLines="1"
+        android:imeOptions="actionSend"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        app:layout_constraintStart_toEndOf="@id/btnSend"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnSend"
+        app:layout_constraintBottom_toBottomOf="@id/btnSend"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp" />
 
     <ScrollView
         android:id="@+id/scroll"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_below="@id/btnSend"
-        android:orientation="vertical">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/btnSend"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp">
 
         <EditText
             android:id="@+id/edtlogText"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:clickable="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
             android:inputType="textMultiLine"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse"></EditText>
+            android:focusable="false"
+            android:clickable="false"
+            android:longClickable="true"
+            android:textIsSelectable="true"
+            android:overScrollMode="ifContentScrolls"
+            android:padding="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            tools:text="Initialized\nPlease select your USB HID device\n" />
     </ScrollView>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
